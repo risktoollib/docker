@@ -15,8 +15,8 @@ RUN echo "options(repos = c(CRAN = 'https://packagemanager.rstudio.com/cran/late
 RUN R -e 'install.packages(c("devtools","remotes","plotly","RCurl","shiny","rmarkdown","knitr","quarto","tidyverse"))'
 # Installing R packages: container specific
 RUN R -e 'install.packages(c("sf","reticulate","factoextra","feather","gt","ggtext","leaflet","lpSolve","lpSolveAPI","optimx","osrm","rugarch","tibbletime","tsibble"), dependencies = TRUE)'
-RUN R -e 'install.packages(c("RTL"))'
-#RUN R -e 'devtools::install_github("risktoollib/RTL")'
+#RUN R -e 'install.packages(c("RTL"))'
+RUN R -e 'devtools::install_github("risktoollib/RTL")'
 # database connection
 # config for libsasl2-dev - required for mongolite
 RUN pkg-config --cflags --libs libsasl2
