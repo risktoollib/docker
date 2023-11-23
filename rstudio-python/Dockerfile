@@ -1,6 +1,6 @@
 FROM rocker/rstudio:latest
 RUN echo 'debconf debconf/frontend select Noninteractive' | debconf-set-selections
-RUN apt-get update && apt-get install -y  libudunits2-dev bash-completion libharfbuzz-dev libfribidi-dev curl wget make cmake libcurl4-openssl-dev libicu-dev libssl-dev libv8-dev libxml2-dev tcl tk pandoc zlib1g-dev openjdk-17-jdk libfontconfig1-dev gdal-bin libgdal-dev && rm -rf /var/lib/apt/lists/*
+RUN apt-get update && apt-get install -y  libudunits2-dev bash-completion libharfbuzz-dev libfribidi-dev curl wget make cmake libcurl4-openssl-dev libicu-dev libssl-dev libsasl2-dev libv8-dev libxml2-dev tcl tk pandoc zlib1g-dev openjdk-17-jdk libfontconfig1-dev gdal-bin libgdal-dev && rm -rf /var/lib/apt/lists/*
 RUN apt-get update && apt-get install -y \
     python3.11 \
     python3.11-dev \
@@ -14,8 +14,15 @@ RUN echo "options(repos = c(CRAN = 'https://packagemanager.rstudio.com/cran/late
 # Installing R packages: core
 RUN R -e 'install.packages(c("devtools","remotes","plotly","RCurl","shiny","rmarkdown","knitr","quarto","tidyverse"))'
 # Installing R packages: container specific
-RUN R -e 'install.packages(c("sf","reticulate","factoextra","feather","gt","leaflet","lpSolve","lpSolveAPI","optimx","osrm","rugarch"), dependencies = TRUE)'
+RUN R -e 'install.packages(c("sf","reticulate","factoextra","feather","gt","leaflet","lpSolve","mongolite","lpSolveAPI","optimx","osrm","rugarch"), dependencies = TRUE)'
 RUN R -e 'devtools::install_github("risktoollib/RTL")'
+# database connection
+# config for libsasl2-dev - required for mongolite
+RUN pkg-config --cflags --libs libsasl2
+RUN export CFLAGS="-I/usr/include/sasl"
+RUN export LDFLAGS="-L/usr/lib"
+RUN R -e 'install.packages(c("mongolite","snowflakes"), dependencies = TRUE)'
+
 
 RUN mkdir /build_zone
 ADD . /build_zone
