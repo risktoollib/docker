@@ -24,7 +24,6 @@ RUN export CFLAGS="-I/usr/include/sasl"
 RUN export LDFLAGS="-L/usr/lib"
 RUN R -e 'install.packages(c("mongolite","snowflakes"), dependencies = TRUE)'
 
-
 RUN mkdir /build_zone
 ADD . /build_zone
 WORKDIR /build_zone
@@ -55,6 +54,9 @@ SHELL ["conda", "run", "-n", "rtenv", "/bin/bash", "-c"]
 ENV USER rstudio
 ENV PASSWORD rstudio
 ENV ROOT true
-# Start RStudio server
-CMD ["R"]
+WORKDIR /home/rstudio
+# Set options for RStudio
+#COPY rstudioOptions.R /tmp/rstudioOptions.R
+#RUN echo "source('/tmp/rstudioOptions.R')" >> /usr/local/lib/R/etc/Rprofile.site
+# Start RStudio server: The /init script is part of the official RStudio Server Docker image and is responsible for starting the server
 CMD ["/init"]
