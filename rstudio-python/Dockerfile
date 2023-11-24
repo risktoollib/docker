@@ -28,7 +28,6 @@ RUN mkdir /build_zone
 ADD . /build_zone
 WORKDIR /build_zone
 RUN rm -rf /build_zone
-EXPOSE 8787
 
 # python with conda env
 ENV CONDA_DIR /opt/conda
@@ -50,13 +49,18 @@ SHELL ["conda", "run", "-n", "rtenv", "/bin/bash", "-c"]
 # RUN source ./env/bin/activate
 #RUN pip3 install -r requirements.txt
 
-# Set the environment variables for RStudio
+# Add user for RStudio
+RUN echo "rstudio:rstudio" | chpasswd
+RUN chown rstudio:rstudio /home/rstudio
 ENV USER rstudio
 ENV PASSWORD rstudio
 ENV ROOT true
+RUN echo "rstudio ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers
+
 WORKDIR /home/rstudio
 # Set options for RStudio
 #COPY rstudioOptions.R /tmp/rstudioOptions.R
 #RUN echo "source('/tmp/rstudioOptions.R')" >> /usr/local/lib/R/etc/Rprofile.site
 # Start RStudio server: The /init script is part of the official RStudio Server Docker image and is responsible for starting the server
+EXPOSE 8787
 CMD ["/init"]
