@@ -10,13 +10,14 @@ RUN mkdir -p /usr/local/lib/R/etc/ /usr/lib/R/etc/
 RUN R CMD javareconf
 
 # R
+RUN mkdir -p /usr/local/lib/R/etc/ /usr/lib/R/etc/
+RUN R CMD javareconf
 RUN echo "options(repos = c(CRAN = 'https://packagemanager.rstudio.com/cran/latest'), download.file.method = 'libcurl', Ncpus = 8)" | tee /usr/local/lib/R/etc/Rprofile.site | tee /usr/lib/R/etc/Rprofile.site
-# Installing R packages: core
-RUN R -e 'install.packages(c("devtools","remotes","plotly","RCurl","shiny","rmarkdown","knitr","quarto"))'
-# Installing R packages: container specific
-RUN R -e 'install.packages(c("sf","reticulate","factoextra","feather","gt","ggtext","leaflet","lpSolve","lpSolveAPI","optimx","osrm","rugarch","tibbletime","tsibble"), dependencies = TRUE)'
-#RUN R -e 'install.packages(c("RTL"))'
+# Installing R packages
+COPY r_packages.R /tmp/r_packages.R
+RUN Rscript /tmp/r_packages.R
 RUN R -e 'devtools::install_github("risktoollib/RTL")'
+
 # database connection
 # config for libsasl2-dev - required for mongolite
 RUN pkg-config --cflags --libs libsasl2
@@ -58,9 +59,5 @@ ENV ROOT true
 RUN echo "rstudio ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers
 
 WORKDIR /home/rstudio
-# Set options for RStudio
-#COPY rstudioOptions.R /tmp/rstudioOptions.R
-#RUN echo "source('/tmp/rstudioOptions.R')" >> /usr/local/lib/R/etc/Rprofile.site
-# Start RStudio server: The /init script is part of the official RStudio Server Docker image and is responsible for starting the server
 EXPOSE 8787
 CMD ["/init"]

@@ -1,6 +1,6 @@
 FROM rocker/tidyverse:latest
 RUN echo 'debconf debconf/frontend select Noninteractive' | debconf-set-selections
-RUN apt-get update && apt-get install -y  libudunits2-dev bash-completion libharfbuzz-dev libfribidi-dev curl wget make cmake htop libcurl4-openssl-dev libicu-dev libssl-dev libsasl2-dev libv8-dev libxml2-dev tcl tk pandoc zlib1g-dev openjdk-17-jdk libfontconfig1-dev gdal-bin libgdal-dev && rm -rf /var/lib/apt/lists/*
+RUN apt-get update && apt-get install -y libudunits2-dev bash-completion libharfbuzz-dev libfribidi-dev curl wget make cmake htop libcurl4-openssl-dev libicu-dev libssl-dev libsasl2-dev libv8-dev libxml2-dev tcl tk pandoc zlib1g-dev openjdk-17-jdk libfontconfig1-dev gdal-bin libgdal-dev && rm -rf /var/lib/apt/lists/*
 
 # python
 RUN apt-get update && apt-get install -y \
@@ -10,12 +10,12 @@ RUN apt-get update && apt-get install -y \
     python3-pip
 
 # nodejs
-RUN apt-get update && apt-get install -y ca-certificates gnupg
-RUN mkdir -p /etc/apt/keyrings
-RUN curl -fsSL https://deb.nodesource.com/gpgkey/nodesource-repo.gpg.key | sudo gpg --dearmor -o /etc/apt/keyrings/nodesource.gpg
-ENV NODE_MAJOR=20
-RUN echo "deb [signed-by=/etc/apt/keyrings/nodesource.gpg] https://deb.nodesource.com/node_$NODE_MAJOR.x nodistro main" | sudo tee /etc/apt/sources.list.d/nodesource.list
-RUN npm install -g playwright axios 
+RUN apt-get update && apt-get install -y tar
+RUN curl -sL https://nodejs.org/dist/latest-v16.x/node-v16.20.2-linux-x64.tar.xz -o node.tar.xz \
+    && tar -xJf node.tar.xz -C /usr/local --strip-components=1 \
+    && rm node.tar.xz
+RUN node -v
+RUN npm install -g playwright axios
 RUN npx playwright install-deps
 
 # R
@@ -68,9 +68,5 @@ ENV ROOT true
 RUN echo "rstudio ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers
 
 WORKDIR /home/rstudio
-# Set options for RStudio
-#COPY rstudioOptions.R /tmp/rstudioOptions.R
-#RUN echo "source('/tmp/rstudioOptions.R')" >> /usr/local/lib/R/etc/Rprofile.site
-# Start RStudio server: The /init script is part of the official RStudio Server Docker image and is responsible for starting the server
 EXPOSE 8787
 CMD ["/init"]
