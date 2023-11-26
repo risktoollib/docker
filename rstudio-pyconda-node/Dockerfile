@@ -23,6 +23,7 @@ RUN mkdir -p /usr/local/lib/R/etc/ /usr/lib/R/etc/
 RUN R CMD javareconf
 RUN echo "options(repos = c(CRAN = 'https://packagemanager.rstudio.com/cran/latest'), download.file.method = 'libcurl', Ncpus = 8)" | tee /usr/local/lib/R/etc/Rprofile.site | tee /usr/lib/R/etc/Rprofile.site
 # Installing R packages
+RUN R -e 'install.packages("devtools", dependencies = TRUE)'
 COPY r_packages.R /tmp/r_packages.R
 RUN Rscript /tmp/r_packages.R
 RUN R -e 'devtools::install_github("risktoollib/RTL")'
