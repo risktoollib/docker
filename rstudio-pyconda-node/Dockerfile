@@ -28,11 +28,11 @@ RUN apt-get update && apt-get install -y \
 
 # nodejs
 RUN apt-get update && apt-get install -y tar
-RUN curl -sL https://nodejs.org/dist/latest-v16.x/node-v16.20.2-linux-x64.tar.xz -o node.tar.xz \
+RUN curl -sL https://nodejs.org/dist/latest-v20.x/node-v20.10.0-linux-x64.tar.xz -o node.tar.xz \
     && tar -xJf node.tar.xz -C /usr/local --strip-components=1 \
     && rm node.tar.xz
 RUN node -v
-RUN npm install -g playwright axios
+RUN npm install -g playwright axios cheerio
 RUN npx playwright install-deps
 
 # R
