@@ -19,15 +19,15 @@ jobs:
     - name: Build and Push Docker image 1
       uses: docker/build-push-action@v2
       with:
-        context: ./rstudio-pyconda
-        file: ./rstudio-pyconda/Dockerfile
+        context: ./rstudio-python
+        file: ./rstudio-python/Dockerfile
         push: true
-        tags: risktoollib/rstudio-pyconda:latest
+        tags: risktoollib/rstudio-python:latest
 
     - name: Build and Push Docker image 2
       uses: docker/build-push-action@v2
       with:
-        context: ./rstudio-pyconda-node
-        file: ./rstudio-pyconda-node/Dockerfile
+        context: ./rstudio-python-node
+        file: ./rstudio-python-node/Dockerfile
         push: true
-        tags: risktoollib/rstudio-pyconda-node:latest
+        tags: risktoollib/rstudio-python-node:latest
