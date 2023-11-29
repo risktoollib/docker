@@ -60,7 +60,7 @@ RUN rm -rf /build_zone
 # python with python env
 WORKDIR /app
 COPY requirements.txt .
-RUN python3 -m venv env
+RUN python3.11 -m venv env
 RUN python3.11 -m venv env
 ENV PATH="./env/bin:$PATH"
 RUN source ./env/bin/activate
