@@ -75,6 +75,7 @@ RUN chown rstudio:rstudio /home/rstudio
 ENV USER rstudio
 ENV PASSWORD rstudio
 ENV ROOT true
+RUN chmod -R 777 /home
 RUN echo "rstudio ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers
 
 WORKDIR /home/rstudio
