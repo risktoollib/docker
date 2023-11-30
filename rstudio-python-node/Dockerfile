@@ -44,6 +44,8 @@ RUN R -e 'install.packages(c("devtools","RSelenium"), dependencies = TRUE)'
 COPY r_packages.R /tmp/r_packages.R
 RUN Rscript /tmp/r_packages.R
 RUN R -e 'devtools::install_github("risktoollib/RTL")'
+RUN echo 'export PATH="/home/rstudio/.pyenv/versions/3.11.6/bin:$PATH"' >> /etc/profile
+RUN R -e 'reticulate::install_python(version = "3.11:latest", list = FALSE, force = FALSE)'
 
 # database connection
 # config for libsasl2-dev - required for mongolite
