@@ -23,7 +23,7 @@ RUN apt-get update && apt-get install -y \
     python3.11 \
     python3.11-dev \
     python3.11-venv \
-    python3-pip
+    python3.11-pip
 RUN mkdir -p /usr/local/lib/R/etc/ /usr/lib/R/etc/
 RUN R CMD javareconf
 
