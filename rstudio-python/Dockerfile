@@ -23,7 +23,7 @@ RUN apt-get update && apt-get install -y \
     python3.11 \
     python3.11-dev \
     python3.11-venv \
-    python3.11-pip
+    python3-pip
 RUN mkdir -p /usr/local/lib/R/etc/ /usr/lib/R/etc/
 RUN R CMD javareconf
 
@@ -52,7 +52,7 @@ RUN rm -rf /build_zone
 # python with python env
 WORKDIR /app
 COPY requirements.txt .
-RUN python3.11 -m venv env
+#RUN python3.11 -m venv env
 ENV PATH="./env/bin:$PATH"
 RUN python3.11 -m venv env && . env/bin/activate && pip3 install -r requirements.txt
 
