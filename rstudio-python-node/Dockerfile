@@ -61,10 +61,8 @@ RUN rm -rf /build_zone
 WORKDIR /app
 COPY requirements.txt .
 RUN python3.11 -m venv env
-RUN python3.11 -m venv env
 ENV PATH="./env/bin:$PATH"
-RUN source ./env/bin/activate
-RUN pip3 install -r requirements.txt
+RUN python3.11 -m venv env && . env/bin/activate && pip3 install -r requirements.txt
 
 # Add user for RStudio
 RUN echo "rstudio:rstudio" | chpasswd
