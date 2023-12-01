@@ -25,6 +25,11 @@ RUN apt-get update && apt-get install -y \
     python3.11-dev \
     python3.11-venv \
     python3-pip
+WORKDIR /home
+COPY requirements.txt .
+RUN python3.11 -m venv env \
+    && ./env/bin/pip3 install -r requirements.txt
+ENV PATH="/home/env/bin:$PATH"
 
 # nodejs
 RUN apt-get update && apt-get install -y tar
@@ -36,16 +41,15 @@ RUN npm install -g playwright axios cheerio
 RUN npx playwright install-deps
 
 # R
+RUN R CMD javareconf
 RUN mkdir -p /usr/local/lib/R/etc/ /usr/lib/R/etc/
 RUN R CMD javareconf
 RUN echo "options(repos = c(CRAN = 'https://packagemanager.rstudio.com/cran/latest'), download.file.method = 'libcurl', Ncpus = 8)" | tee /usr/local/lib/R/etc/Rprofile.site | tee /usr/lib/R/etc/Rprofile.site
 # Installing R packages
-RUN R -e 'install.packages(c("devtools","RSelenium"), dependencies = TRUE)'
 COPY r_packages.R /tmp/r_packages.R
 RUN Rscript /tmp/r_packages.R
+RUN R -e 'install.packages("Selenium", dependencies = TRUE)'
 RUN R -e 'devtools::install_github("risktoollib/RTL")'
-RUN echo 'export PATH="/home/rstudio/.pyenv/versions/3.11.6/bin:$PATH"' >> /etc/profile
-RUN R -e 'reticulate::install_python(version = "3.11:latest", list = FALSE, force = FALSE)'
 
 # database connection
 # config for libsasl2-dev - required for mongolite
@@ -58,13 +62,6 @@ RUN mkdir /build_zone
 ADD . /build_zone
 WORKDIR /build_zone
 RUN rm -rf /build_zone
-
-# python with python env
-WORKDIR /app
-COPY requirements.txt .
-#RUN python3.11 -m venv env
-ENV PATH="./env/bin:$PATH"
-RUN python3.11 -m venv env && . env/bin/activate && pip3 install -r requirements.txt
 
 # Add user for RStudio
 RUN echo "rstudio:rstudio" | chpasswd
