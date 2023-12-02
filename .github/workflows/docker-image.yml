@@ -16,26 +16,26 @@ jobs:
         username: ${{ secrets.DOCKER_HUB_USERNAME }}
         password: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
 
-    # - name: Build and Push Docker image 1
-    #   uses: docker/build-push-action@v2
-    #   with:
-    #     context: ./rstudio-python
-    #     file: ./rstudio-python/Dockerfile
-    #     push: true
-    #     tags: risktoollib/rstudio-python:latest
+     - name: with python and node
+       uses: docker/build-push-action@v2
+       with:
+         context: ./rstudio-python-node
+         file: ./rstudio-python-node/Dockerfile
+         push: true
+         tags: risktoollib/rstudio-python-node:latest
 
-    # - name: Build and Push Docker image 2
-    #   uses: docker/build-push-action@v2
-    #   with:
-    #     context: ./rstudio-python-node
-    #     file: ./rstudio-python-node/Dockerfile
-    #     push: true
-    #     tags: risktoollib/rstudio-python-node:latest
-    
-    - name: Build and Push Docker image 3
+    - name: vscode and node
       uses: docker/build-push-action@v2
       with:
         context: ./vscode-python-node
         file: ./vscode-python-node/Dockerfile
         push: true
         tags: risktoollib/vscode-python-node:latest
+
+     - name: with python
+       uses: docker/build-push-action@v2
+       with:
+         context: ./rstudio-python
+         file: ./rstudio-python/Dockerfile
+         push: true
+         tags: risktoollib/rstudio-python:latest

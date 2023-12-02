@@ -1,6 +1,6 @@
 FROM rocker/tidyverse:latest
 RUN echo 'debconf debconf/frontend select Noninteractive' | debconf-set-selections
-RUN apt-get update && apt-get install -y libudunits2-dev bash-completion libharfbuzz-dev libfribidi-dev curl wget make cmake htop libcurl4-openssl-dev libicu-dev libssl-dev libsasl2-dev libv8-dev libxml2-dev tcl tk pandoc zlib1g-dev openjdk-17-jdk libfontconfig1-dev gdal-bin libgdal-dev && rm -rf /var/lib/apt/lists/*
+RUN apt-get update && apt-get install -y git libudunits2-dev bash-completion libharfbuzz-dev libfribidi-dev curl wget make cmake htop libcurl4-openssl-dev libicu-dev libssl-dev libsasl2-dev libv8-dev libxml2-dev tcl tk pandoc zlib1g-dev openjdk-17-jdk libfontconfig1-dev gdal-bin libgdal-dev && rm -rf /var/lib/apt/lists/*
 # selelium
 RUN apt-get update && apt-get install -y \
     firefox \
@@ -31,14 +31,13 @@ RUN python3.11 -m venv env \
     && ./env/bin/pip3 install -r requirements.txt
 ENV PATH="/home/env/bin:$PATH"
 
-# nodejs
-RUN apt-get update && apt-get install -y tar
+# Install Node.js and npm packages
 RUN curl -sL https://nodejs.org/dist/latest-v20.x/node-v20.10.0-linux-x64.tar.xz -o node.tar.xz \
     && tar -xJf node.tar.xz -C /usr/local --strip-components=1 \
     && rm node.tar.xz
-RUN node -v
 RUN npm install -g playwright axios cheerio
 RUN npx playwright install-deps
+RUN npx playwright install
 
 # R
 RUN R CMD javareconf
