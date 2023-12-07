@@ -42,10 +42,17 @@ RUN pkg-config --cflags --libs libsasl2 && \
     export LDFLAGS="-L/usr/lib"
 
 # Add user for RStudio
+# Set environment variables
+ENV USER rstudio
+ENV PASSWORD rstudio
+ENV ROOT true
+
+# Existing RUN command with your modifications
 RUN echo "rstudio:rstudio" | chpasswd && \
     chown rstudio:rstudio /home/rstudio && \
     echo "rstudio ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers && \
-    echo "copilot-enabled=1" >> /etc/rstudio/rsession.conf
+    echo "copilot-enabled=1" >> /etc/rstudio/rsession.conf && \
+    chmod -R 777 /home
 
 WORKDIR /home/rstudio
 EXPOSE 8787
