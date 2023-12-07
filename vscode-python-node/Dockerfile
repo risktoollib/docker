@@ -26,7 +26,6 @@ RUN curl -sL https://nodejs.org/dist/latest-v20.x/node-v20.10.0-linux-x64.tar.xz
 
 # R setup
 # R configuration and package installation
-# R configuration and package installation
 COPY r_packages.R /tmp/r_packages.R
 RUN R CMD javareconf && \
     mkdir -p /usr/local/lib/R/etc/ /usr/lib/R/etc/ && \
