@@ -1,8 +1,8 @@
 FROM rocker/tidyverse:latest
 
 # System dependencies
-RUN echo 'debconf debconf/frontend select Noninteractive' | debconf-set-selections
-RUN apt-get update && apt-get install -y \
+RUN echo 'debconf debconf/frontend select Noninteractive' | debconf-set-selections && \
+    apt-get update && apt-get install -y \
     git libudunits2-dev bash-completion libharfbuzz-dev libfribidi-dev curl wget make cmake htop \
     libcurl4-openssl-dev libicu-dev libssl-dev libsasl2-dev libv8-dev libxml2-dev tcl tk pandoc \
     zlib1g-dev openjdk-17-jdk libfontconfig1-dev gdal-bin libgdal-dev \
@@ -10,50 +10,35 @@ RUN apt-get update && apt-get install -y \
     python3.11 python3.11-dev python3.11-venv python3-pip tar \
     && rm -rf /var/lib/apt/lists/*
 
-# Install geckodriver
-RUN wget https://github.com/mozilla/geckodriver/releases/download/v0.29.0/geckodriver-v0.29.0-linux64.tar.gz \
-    && tar -xvzf geckodriver-v0.29.0-linux64.tar.gz \
-    && mv geckodriver /usr/local/bin \
-    && chmod +x /usr/local/bin/geckodriver \
-    && rm geckodriver-v0.29.0-linux64.tar.gz
-
 # Setup Python environment
 WORKDIR /home
 COPY requirements.txt .
-RUN python3.11 -m venv env \
-    && ./env/bin/pip3 install -r requirements.txt
+RUN python3.11 -m venv env && ./env/bin/pip3 install --no-cache-dir -r requirements.txt
 ENV PATH="/home/env/bin:$PATH"
 
 # Install Node.js and npm packages
 RUN curl -sL https://nodejs.org/dist/latest-v20.x/node-v20.10.0-linux-x64.tar.xz -o node.tar.xz \
     && tar -xJf node.tar.xz -C /usr/local --strip-components=1 \
-    && rm node.tar.xz
-RUN npm install -g playwright axios cheerio
-RUN npx playwright install-deps
-RUN npx playwright install
+    && rm node.tar.xz \
+    && npm install -g playwright axios cheerio \
+    && npx playwright install-deps \
+    && npx playwright install
 
 # R setup
-RUN R CMD javareconf
-RUN mkdir -p /usr/local/lib/R/etc/ /usr/lib/R/etc/
-RUN echo "options(repos = c(CRAN = 'https://packagemanager.rstudio.com/cran/latest'), download.file.method = 'libcurl', Ncpus = 8)" \
+RUN R CMD javareconf && \
+    mkdir -p /usr/local/lib/R/etc/ /usr/lib/R/etc/ && \
+    echo "options(repos = c(CRAN = 'https://packagemanager.rstudio.com/cran/latest'), download.file.method = 'libcurl', Ncpus = 8)" \
     | tee /usr/local/lib/R/etc/Rprofile.site \
-    | tee /usr/lib/R/etc/Rprofile.site
-COPY r_packages.R /tmp/r_packages.R
-RUN Rscript /tmp/r_packages.R
-RUN R -e 'install.packages("Selenium", dependencies = TRUE)'
-RUN R -e 'devtools::install_github("risktoollib/RTL")'
+    | tee /usr/lib/R/etc/Rprofile.site && \
+    COPY r_packages.R /tmp/r_packages.R && \
+    Rscript /tmp/r_packages.R && \
+    R -e 'devtools::install_github("risktoollib/RTL")'
 
 # Database connection configuration
-RUN pkg-config --cflags --libs libsasl2
-RUN export CFLAGS="-I/usr/include/sasl" \
+RUN pkg-config --cflags --libs libsasl2 && \
+    export CFLAGS="-I/usr/include/sasl" \
     && export LDFLAGS="-L/usr/lib" \
     && R -e 'install.packages(c("mongolite","snowflakes"), dependencies = TRUE)'
-
-# Cleanup
-RUN mkdir /build_zone
-ADD . /build_zone
-WORKDIR /build_zone
-RUN rm -rf /build_zone
 
 # Install code-server (VS Code in the browser)
 RUN curl -fsSL https://code-server.dev/install.sh | sh
