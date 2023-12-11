@@ -13,7 +13,7 @@ sudo apt-get autoremove
 
 # rQuantlib
 sudo apt install libquantlib0v5 libquantlib0-dev
-Rscript -e "install.packages('rQuantlib')"
+Rscript -e "install.packages('RQuantLib')"
 
 # node packages
 npx playwright install
