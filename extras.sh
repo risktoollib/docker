@@ -4,7 +4,7 @@
 sudo apt update
 
 # Install required packages
-sudo apt install -y libopenblas-base libopenblas-dev libavfilter-dev librsvg2-dev poppler-utils cargo libmagick++-dev libpoppler-cpp-dev libtesseract-dev libleptonica-dev tesseract-ocr-eng
+sudo apt install -y jags libavfilter-dev librsvg2-dev poppler-utils cargo libmagick++-dev libpoppler-cpp-dev libtesseract-dev libleptonica-dev tesseract-ocr-eng
 sudo apt-get autoremove
 
 # OpenBlas
@@ -13,8 +13,7 @@ sudo apt-get autoremove
 
 # rQuantlib
 sudo apt install libquantlib0v5 libquantlib0-dev
-Rscript -e "install.packages('RQuantLib')"
-
+Rscript -e 'pkgs <- c("RQuantLib", "tesseract", "pdftools"); installed_pkgs <- rownames(installed.packages()); install.packages(pkgs[!(pkgs %in% installed_pkgs)], dependencies = TRUE)'
 # node packages
 npx playwright install
 npm install cheerio
