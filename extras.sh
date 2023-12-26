@@ -14,6 +14,10 @@ sudo apt-get autoremove
 # rQuantlib
 sudo apt install libquantlib0v5 libquantlib0-dev
 Rscript -e 'pkgs <- c("RQuantLib", "tesseract", "pdftools"); installed_pkgs <- rownames(installed.packages()); install.packages(pkgs[!(pkgs %in% installed_pkgs)], dependencies = TRUE)'
+
 # node packages
 npx playwright install
 npm install cheerio
+
+# quarto pdf
+quarto install tinytex
