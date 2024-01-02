@@ -1,5 +1,8 @@
 #!/usr/bin/bash
 
+# fix end of line if required
+#sed -i 's/\r//' extras.sh
+
 # Update package list
 sudo apt update
 
