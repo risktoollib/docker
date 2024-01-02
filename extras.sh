@@ -20,7 +20,7 @@ Rscript -e 'pkgs <- c("RQuantLib", "tesseract", "pdftools"); installed_pkgs <- r
 
 # node packages
 npx playwright install
-npm install cheerio
+npm install cheerio axios
 
 # quarto pdf
 quarto install tinytex
