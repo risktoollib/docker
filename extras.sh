@@ -26,4 +26,4 @@ npm install cheerio axios
 quarto install tinytex
 
 # fOptions
-Rscript -e 'install.packages("fOptions", repos="http://R-Forge.R-project.org"); install.packages("fExoticOptions", repos="http://R-Forge.R-project.org")'
+#Rscript -e 'install.packages("fOptions", repos="http://R-Forge.R-project.org"); install.packages("fExoticOptions", repos="http://R-Forge.R-project.org")'
