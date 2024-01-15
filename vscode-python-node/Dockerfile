@@ -17,7 +17,7 @@ RUN python3.11 -m venv env && ./env/bin/pip3 install --no-cache-dir -r requireme
 ENV PATH="/home/env/bin:$PATH"
 
 # Install Node.js and npm packages
-RUN curl -sL https://nodejs.org/dist/latest-v20.x/node-v20.10.0-linux-x64.tar.xz -o node.tar.xz \
+RUN curl -sL https://nodejs.org/dist/latest-v20.x/node-v20.11.0-linux-x64.tar.xz -o node.tar.xz \
     && tar -xJf node.tar.xz -C /usr/local --strip-components=1 \
     && rm node.tar.xz \
     && npm install -g playwright axios cheerio \
