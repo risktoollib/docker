@@ -33,7 +33,8 @@ RUN R CMD javareconf && \
     | tee /usr/local/lib/R/etc/Rprofile.site | tee /usr/lib/R/etc/Rprofile.site && \
     Rscript /tmp/r_packages.R && \
     R -e 'devtools::install_github("risktoollib/RTL")' && \
-    R -e 'install.packages(c("mongolite","snowflakes"), dependencies = TRUE)'
+    R -e 'install.packages(c("mongolite","snowflakes"), dependencies = TRUE)' && \
+    R -e 'library(reticulate);reticulate::install_python(version = '3.11')'
 
 
 # Database connection configuration

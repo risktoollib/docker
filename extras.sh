@@ -26,7 +26,7 @@ npm install cheerio axios
 quarto install tinytex
 
 # reticulare python3.11
-Rscript -e 'library(reticulate);reticulate::install_python(version = '3.11')'
+# Rscript -e 'library(reticulate);reticulate::install_python(version = '3.11')'
 
 # fOptions
 #Rscript -e 'install.packages("fOptions", repos="http://R-Forge.R-project.org"); install.packages("fExoticOptions", repos="http://R-Forge.R-project.org")'
