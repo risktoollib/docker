@@ -7,7 +7,7 @@ RUN echo 'debconf debconf/frontend select Noninteractive' | debconf-set-selectio
 RUN apt-get update && apt-get install -y \
     libjq-dev libprotobuf-dev protobuf-compiler git libudunits2-dev bash-completion libharfbuzz-dev libfribidi-dev curl wget make cmake htop \
     libcurl4-openssl-dev libicu-dev libssl-dev libsasl2-dev libv8-dev libxml2-dev tcl tk pandoc \
-    zlib1g-dev openjdk-17-jdk libfontconfig1-dev gdal-bin libgdal-dev python3.11 python3.11-dev libncurses5-dev \
+    zlib1g-dev openjdk-17-jdk libfontconfig1-dev gdal-bin libgdal-dev python3.11 python3.11-dev libncurses5-dev libreadline-dev \
     python3.11-venv python3-pip && rm -rf /var/lib/apt/lists/*
 
 # Setup Python virtual environment
@@ -33,8 +33,7 @@ RUN R CMD javareconf && \
     | tee /usr/local/lib/R/etc/Rprofile.site | tee /usr/lib/R/etc/Rprofile.site && \
     Rscript /tmp/r_packages.R && \
     R -e 'devtools::install_github("risktoollib/RTL")' && \
-    R -e 'install.packages(c("mongolite","snowflakes"), dependencies = TRUE)' && \
-    R -e 'library(reticulate);reticulate::install_python(version = '3.11')'
+    R -e 'install.packages(c("mongolite","snowflakes"), dependencies = TRUE)'
 
 
 # Database connection configuration
