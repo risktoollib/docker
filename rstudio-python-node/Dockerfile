@@ -7,7 +7,7 @@ RUN echo 'debconf debconf/frontend select Noninteractive' | debconf-set-selectio
 RUN apt-get update && apt-get install -y \
     libjq-dev libprotobuf-dev protobuf-compiler git libudunits2-dev bash-completion libharfbuzz-dev libfribidi-dev curl wget make cmake htop \
     libcurl4-openssl-dev libicu-dev libssl-dev libsasl2-dev libv8-dev libxml2-dev tcl tk pandoc \
-    zlib1g-dev openjdk-17-jdk libfontconfig1-dev gdal-bin libgdal-dev python3.11 python3.11-dev \
+    zlib1g-dev openjdk-17-jdk libfontconfig1-dev gdal-bin libgdal-dev python3.11 python3.11-dev libncurses5-dev \
     python3.11-venv python3-pip && rm -rf /var/lib/apt/lists/*
 
 # Setup Python virtual environment
