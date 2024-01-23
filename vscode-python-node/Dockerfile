@@ -7,6 +7,7 @@ RUN echo 'debconf debconf/frontend select Noninteractive' | debconf-set-selectio
     libcurl4-openssl-dev libicu-dev libssl-dev libsasl2-dev libv8-dev libxml2-dev tcl tk pandoc \
     zlib1g-dev openjdk-17-jdk libfontconfig1-dev gdal-bin libgdal-dev \
     firefox gnupg2 software-properties-common libfontconfig1 libxrender1 libxtst6 libxi6 \
+    jags libavfilter-dev librsvg2-dev poppler-utils cargo libmagick++-dev libpoppler-cpp-dev libtesseract-dev libleptonica-dev tesseract-ocr-eng
     python3.11 python3.11-dev python3.11-venv python3-pip tar \
     && rm -rf /var/lib/apt/lists/*
 
@@ -34,7 +35,7 @@ RUN R CMD javareconf && \
     | tee /usr/local/lib/R/etc/Rprofile.site | tee /usr/lib/R/etc/Rprofile.site && \
     Rscript /tmp/r_packages.R && \
     R -e 'devtools::install_github("risktoollib/RTL")' && \
-    R -e 'install.packages(c("mongolite","snowflakes"), dependencies = TRUE)'
+    R -e 'install.packages(c("mongolite","snowflakes","QuantLib"), dependencies = TRUE)'
 
 # Database connection configuration
 RUN pkg-config --cflags --libs libsasl2 && \
