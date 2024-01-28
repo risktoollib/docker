@@ -7,7 +7,7 @@ RUN echo 'debconf debconf/frontend select Noninteractive' | debconf-set-selectio
     libcurl4-openssl-dev libicu-dev libssl-dev libsasl2-dev libv8-dev libxml2-dev tcl tk pandoc \
     zlib1g-dev openjdk-17-jdk libfontconfig1-dev gdal-bin libgdal-dev \
     firefox gnupg2 software-properties-common libfontconfig1 libxrender1 libxtst6 libxi6 \
-    jags libavfilter-dev librsvg2-dev poppler-utils cargo libmagick++-dev libpoppler-cpp-dev libtesseract-dev libleptonica-dev tesseract-ocr-eng
+    jags libavfilter-dev librsvg2-dev poppler-utils cargo libmagick++-dev libpoppler-cpp-dev libtesseract-dev libleptonica-dev tesseract-ocr-eng \
     python3.11 python3.11-dev python3.11-venv python3-pip tar \
     && rm -rf /var/lib/apt/lists/*
 
@@ -25,12 +25,10 @@ RUN curl -sL https://nodejs.org/dist/latest-v20.x/node-v20.11.0-linux-x64.tar.xz
     && npx playwright install-deps \
     && npx playwright install
 
-# R setup
-# R configuration and package installation
+# R setup and package installation
 COPY r_packages.R /tmp/r_packages.R
 RUN R CMD javareconf && \
     mkdir -p /usr/local/lib/R/etc/ /usr/lib/R/etc/ && \
-    R CMD javareconf && \
     echo "options(repos = c(CRAN = 'https://packagemanager.rstudio.com/cran/latest'), download.file.method = 'libcurl', Ncpus = 8)" \
     | tee /usr/local/lib/R/etc/Rprofile.site | tee /usr/lib/R/etc/Rprofile.site && \
     Rscript /tmp/r_packages.R && \
@@ -38,9 +36,8 @@ RUN R CMD javareconf && \
     R -e 'install.packages(c("mongolite","snowflakes","QuantLib"), dependencies = TRUE)'
 
 # Database connection configuration
-RUN pkg-config --cflags --libs libsasl2 && \
-    export CFLAGS="-I/usr/include/sasl" \
-    && export LDFLAGS="-L/usr/lib" \
+ENV CFLAGS="-I/usr/include/sasl" \
+    LDFLAGS="-L/usr/lib" \
     && R -e 'install.packages(c("mongolite","snowflakes"), dependencies = TRUE)'
 
 # Install code-server (VS Code in the browser)
