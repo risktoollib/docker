@@ -37,9 +37,9 @@ RUN R CMD javareconf && \
     R -e 'install.packages(c("mongolite","snowflakes","QuantLib"), dependencies = TRUE)'
 
 # Database connection configuration
-RUN pkg-config --cflags --libs libsasl2 && \
-    export CFLAGS="-I/usr/include/sasl" && \
-    export LDFLAGS="-L/usr/lib"
+RUN pkg-config --cflags --libs libsasl2 
+ENV CFLAGS="-I/usr/include/sasl" \
+    LDFLAGS="-L/usr/lib"
 
 # Add user for RStudio
 # Set environment variables

@@ -36,9 +36,12 @@ RUN R CMD javareconf && \
     R -e 'install.packages(c("mongolite","snowflakes","QuantLib"), dependencies = TRUE)'
 
 # Database connection configuration
+RUN pkg-config --cflags --libs libsasl2 
 ENV CFLAGS="-I/usr/include/sasl" \
-    LDFLAGS="-L/usr/lib" \
-    && R -e 'install.packages(c("mongolite","snowflakes"), dependencies = TRUE)'
+    LDFLAGS="-L/usr/lib"
+
+RUN R -e 'install.packages(c("mongolite","snowflake"), dependencies = TRUE)'
+
 
 # Install code-server (VS Code in the browser)
 RUN curl -fsSL https://code-server.dev/install.sh | sh
