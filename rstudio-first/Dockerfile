@@ -7,7 +7,7 @@ RUN apt-get update && apt-get install -y \
     libxml2-dev
 
 # Install R packages
-RUN R -e "install.packages(c('tidyquant', 'plotly'), dependencies = TRUE, repos = 'https://packagemanager.rstudio.com/cran/latest')"
+RUN R -e "install.packages(c('tidyquant', 'plotly','quantmod'), dependencies = TRUE, repos = 'https://packagemanager.rstudio.com/cran/latest')"
 
 # Add user for RStudio
 RUN echo "rstudio:rstudio" | chpasswd
