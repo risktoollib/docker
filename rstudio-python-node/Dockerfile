@@ -9,7 +9,7 @@ RUN apt-get update && apt-get install -y \
     libcurl4-openssl-dev libicu-dev libssl-dev libsasl2-dev libv8-dev libxml2-dev tcl tk pandoc \
     zlib1g-dev openjdk-17-jdk libfontconfig1-dev gdal-bin libgdal-dev python3.11 python3.11-dev libncurses5-dev libreadline-dev \
     jags libavfilter-dev librsvg2-dev poppler-utils cargo libmagick++-dev libpoppler-cpp-dev libtesseract-dev libleptonica-dev tesseract-ocr-eng \
-    python3.11-venv python3-pip && rm -rf /var/lib/apt/lists/*
+    python3.11-venv python3-pip libglpk-dev && rm -rf /var/lib/apt/lists/*
 
 # Setup Python virtual environment
 WORKDIR /home
