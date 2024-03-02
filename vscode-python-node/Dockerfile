@@ -5,7 +5,7 @@ RUN echo 'debconf debconf/frontend select Noninteractive' | debconf-set-selectio
     apt-get update && apt-get install -y \
     git libudunits2-dev bash-completion libharfbuzz-dev libfribidi-dev curl wget make cmake htop \
     libcurl4-openssl-dev libicu-dev libssl-dev libsasl2-dev libv8-dev libxml2-dev tcl tk pandoc \
-    zlib1g-dev openjdk-17-jdk libfontconfig1-dev gdal-bin libgdal-dev \
+    zlib1g-dev openjdk-17-jdk libfontconfig1-dev gdal-bin libgdal-dev libhiredis-dev \
     firefox gnupg2 software-properties-common libfontconfig1 libxrender1 libxtst6 libxi6 \
     jags libavfilter-dev librsvg2-dev poppler-utils cargo libmagick++-dev libpoppler-cpp-dev libtesseract-dev libleptonica-dev tesseract-ocr-eng \
     python3.11 python3.11-dev python3.11-venv python3-pip libglpk-dev tar \
