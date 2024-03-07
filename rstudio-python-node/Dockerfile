@@ -48,10 +48,7 @@ RUN python3.11 -m venv env && \
 RUN curl -sL https://nodejs.org/dist/latest-v20.x/node-v20.11.1-linux-x64.tar.xz -o node.tar.xz \
     && tar -xJf node.tar.xz -C /usr/local --strip-components=1 \
     && rm node.tar.xz \
-    && npm install -g --unsafe-perm=true --allow-root \
-        playwright@1.16.1 \
-        axios \
-        cheerio \
+    && npm install -g playwright axios cheerio \
     && npx playwright install-deps \
     && npx playwright install
 
