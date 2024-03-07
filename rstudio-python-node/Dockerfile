@@ -47,8 +47,8 @@ RUN python3.11 -m venv env && \
 # Install Node.js and npm packages
 RUN curl -sL https://nodejs.org/dist/latest-v20.x/node-v20.11.1-linux-x64.tar.xz -o node.tar.xz \
     && tar -xJf node.tar.xz -C /usr/local --strip-components=1 \
-    && rm node.tar.xz \
-    && npm install -g playwright axios cheerio \
+    && rm node.tar.xz
+RUN npm install -g playwright axios cheerio \
     && npx playwright install-deps \
     && npx playwright install
 
