@@ -1,6 +1,6 @@
 FROM rocker/tidyverse:latest
-# Install system dependencies
 
+# Install system dependencies
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
         libglpk-dev \
@@ -36,6 +36,7 @@ RUN apt-get update && \
         python3.11-venv \
         python3-pip \
         pkg-config \
+        xz-utils \ 
     && rm -rf /var/lib/apt/lists/*
 
 # Setup Python virtual environment
@@ -45,11 +46,11 @@ RUN python3.11 -m venv env && \
     ./env/bin/pip3 install --no-cache-dir -r requirements.txt
 
 # Install Node.js and npm packages
-RUN curl -v -sL https://nodejs.org/dist/v20.11.1/node-v20.11.1-linux-x64.tar.xz -o node.tar.xz 
-RUN tar -xJf node.tar.xz -C /usr/local --strip-components=1 \
-    && rm node.tar.xz
-
-RUN npm install -g playwright axios cheerio \
+RUN curl -sL https://nodejs.org/dist/v20.11.1/node-v20.11.1-linux-x64.tar.xz -o node.tar.xz \
+    && xz -d node.tar.xz \
+    && tar -xf node.tar -C /usr/local --strip-components=1 \
+    && rm node.tar \
+    && npm install -g playwright axios cheerio \
     && npx playwright install-deps \
     && npx playwright install
 
