@@ -8,7 +8,7 @@ RUN echo 'debconf debconf/frontend select Noninteractive' | debconf-set-selectio
     zlib1g-dev openjdk-17-jdk libfontconfig1-dev gdal-bin libgdal-dev libhiredis-dev \
     firefox gnupg2 software-properties-common libfontconfig1 libxrender1 libxtst6 libxi6 \
     jags libavfilter-dev librsvg2-dev poppler-utils cargo libmagick++-dev libpoppler-cpp-dev libtesseract-dev libleptonica-dev tesseract-ocr-eng \
-    python3.11 python3.11-dev python3.11-venv python3-pip libglpk-dev tar \
+    xz-utils python3.11 python3.11-dev python3.11-venv python3-pip libglpk-dev tar \
     && rm -rf /var/lib/apt/lists/*
 
 # Setup Python environment
@@ -18,9 +18,10 @@ RUN python3.11 -m venv env && ./env/bin/pip3 install --no-cache-dir -r requireme
 ENV PATH="/home/env/bin:$PATH"
 
 # Install Node.js and npm packages
-RUN curl -sL https://nodejs.org/dist/latest-v20.x/node-v20.11.1-linux-x64.tar.xz -o node.tar.xz \
-    && tar -xJf node.tar.xz -C /usr/local --strip-components=1 \
-    && rm node.tar.xz \
+RUN curl -sL https://nodejs.org/dist/v20.11.1/node-v20.11.1-linux-x64.tar.xz -o node.tar.xz \
+    && xz -d node.tar.xz \
+    && tar -xf node.tar -C /usr/local --strip-components=1 \
+    && rm node.tar \
     && npm install -g playwright axios cheerio \
     && npx playwright install-deps \
     && npx playwright install
