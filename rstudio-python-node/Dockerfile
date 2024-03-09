@@ -45,10 +45,10 @@ RUN python3.11 -m venv env && \
     ./env/bin/pip3 install --no-cache-dir -r requirements.txt
 
 # Install Node.js and npm packages
-RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash - && apt-get install -y nodejs
-#RUN wget https://nodejs.org/dist/v20.11.1/node-v20.11.1-linux-x64.tar.xz -O node.tar.xz \
-#    && tar -xJf node.tar.xz -C /usr/local --strip-components=1 \
-#    && rm node.tar.xz
+RUN curl -v -sL https://nodejs.org/dist/v20.11.1/node-v20.11.1-linux-x64.tar.xz -o node.tar.xz 
+RUN tar -xJf node.tar.xz -C /usr/local --strip-components=1 \
+    && rm node.tar.xz
+
 RUN npm install -g playwright axios cheerio \
     && npx playwright install-deps \
     && npx playwright install
