@@ -39,9 +39,9 @@ RUN apt-get update && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
-# Setup Python virtual environment
+# Setup python + virtual environment + node + r pacakages
 WORKDIR /home
-COPY requirements.txt .
+COPY requirements.txt r_packages .
 RUN python3.11 -m venv env \
     && ./env/bin/pip3 install --no-cache-dir -r requirements.txt \
     && curl -sL https://nodejs.org/dist/v20.11.1/node-v20.11.1-linux-x64.tar.xz -o node.tar.xz \
@@ -50,23 +50,18 @@ RUN python3.11 -m venv env \
     && rm node.tar \
     && npm install -g playwright axios cheerio \
     && npx playwright install-deps \
-    && npx playwright install
-
-# Install R packages
-COPY r_packages.R /tmp/r_packages.R
-RUN R CMD javareconf && \
-    Rscript /tmp/r_packages.R && \
+    && npx playwright install \
+    && R CMD javareconf && \
+    Rscript r_packages.R && \
     R -e 'devtools::install_github("risktoollib/RTL")' && \
     R -e 'install.packages(c("mongolite", "snowflakes", "QuantLib"), dependencies = TRUE)'
 
-# Database connection configuration
+# Set environment variables for database connection configuration, user information, and other settings
 ENV CFLAGS="-I/usr/include/sasl" \
-    LDFLAGS="-L/usr/lib"
-
-# Add user for RStudio and set environment variables
-ENV USER rstudio
-ENV PASSWORD rstudio
-ENV ROOT true
+    LDFLAGS="-L/usr/lib" \
+    USER=rstudio \
+    PASSWORD=rstudio \
+    ROOT=true
 
 # Existing RUN command with modifications for user setup and environment configuration
 RUN echo "rstudio:rstudio" | chpasswd && \
