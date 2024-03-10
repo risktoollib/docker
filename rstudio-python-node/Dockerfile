@@ -1,6 +1,6 @@
 FROM rocker/tidyverse:latest
 
-# Install system dependencies
+# Install system dependencies and clean up in the same command to reduce image size
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
         libglpk-dev \
@@ -13,7 +13,6 @@ RUN apt-get update && \
         libharfbuzz-dev \
         libfribidi-dev \
         curl \
-        wget \
         make \
         cmake \
         htop \
@@ -36,8 +35,9 @@ RUN apt-get update && \
         python3.11-venv \
         python3-pip \
         pkg-config \
-        xz-utils \ 
-    && rm -rf /var/lib/apt/lists/*
+        xz-utils && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
 
 # Setup Python virtual environment
 WORKDIR /home
@@ -45,33 +45,31 @@ COPY requirements.txt .
 RUN python3.11 -m venv env && \
     ./env/bin/pip3 install --no-cache-dir -r requirements.txt
 
-# Install Node.js and npm packages
-RUN curl -sL https://nodejs.org/dist/v20.11.1/node-v20.11.1-linux-x64.tar.xz -o node.tar.xz \
-    && xz -d node.tar.xz \
-    && tar -xf node.tar -C /usr/local --strip-components=1 \
-    && rm node.tar \
-    && npm install -g playwright axios cheerio \
-    && npx playwright install-deps \
-    && npx playwright install
+# Install Node.js, npm packages, and perform cleanup to avoid keeping unnecessary files
+RUN curl -sL https://nodejs.org/dist/v20.11.1/node-v20.11.1-linux-x64.tar.xz -o node.tar.xz && \
+    tar -xJf node.tar.xz -C /usr/local --strip-components=1 && \
+    rm node.tar.xz && \
+    npm install -g playwright axios cheerio && \
+    npx playwright install-deps && \
+    npx playwright install
 
 # Install R packages
 COPY r_packages.R /tmp/r_packages.R
 RUN R CMD javareconf && \
     Rscript /tmp/r_packages.R && \
     R -e 'devtools::install_github("risktoollib/RTL")' && \
-    R -e 'install.packages(c("mongolite","snowflakes","QuantLib"), dependencies = TRUE)'
+    R -e 'install.packages(c("mongolite", "snowflakes", "QuantLib"), dependencies = TRUE)'
 
 # Database connection configuration
 ENV CFLAGS="-I/usr/include/sasl" \
     LDFLAGS="-L/usr/lib"
 
-# Add user for RStudio
-# Set environment variables
+# Add user for RStudio and set environment variables
 ENV USER rstudio
 ENV PASSWORD rstudio
 ENV ROOT true
 
-# Existing RUN command with your modifications
+# Existing RUN command with modifications for user setup and environment configuration
 RUN echo "rstudio:rstudio" | chpasswd && \
     chown rstudio:rstudio /home/rstudio && \
     echo "rstudio ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers && \
