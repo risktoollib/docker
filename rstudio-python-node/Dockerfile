@@ -42,16 +42,15 @@ RUN apt-get update && \
 # Setup Python virtual environment
 WORKDIR /home
 COPY requirements.txt .
-RUN python3.11 -m venv env && \
-    ./env/bin/pip3 install --no-cache-dir -r requirements.txt
-
-# Install Node.js, npm packages, and perform cleanup to avoid keeping unnecessary files
-RUN curl -sL https://nodejs.org/dist/v20.11.1/node-v20.11.1-linux-x64.tar.xz -o node.tar.xz && \
-    tar -xJf node.tar.xz -C /usr/local --strip-components=1 && \
-    rm node.tar.xz && \
-    npm install -g playwright axios cheerio && \
-    npx playwright install-deps && \
-    npx playwright install
+RUN python3.11 -m venv env \
+    && ./env/bin/pip3 install --no-cache-dir -r requirements.txt \
+    && curl -sL https://nodejs.org/dist/v20.11.1/node-v20.11.1-linux-x64.tar.xz -o node.tar.xz \
+    && xz -d node.tar.xz \
+    && tar -xf node.tar -C /usr/local --strip-components=1 \
+    && rm node.tar \
+    && npm install -g playwright axios cheerio \
+    && npx playwright install-deps \
+    && npx playwright install
 
 # Install R packages
 COPY r_packages.R /tmp/r_packages.R
