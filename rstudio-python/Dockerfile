@@ -46,8 +46,8 @@ RUN python3.11 -m venv env \
     && ./env/bin/pip3 install --no-cache-dir -r requirements.txt \
     && R CMD javareconf && \
     Rscript r_packages.R && \
-    R -e 'devtools::install_github("risktoollib/RTL")' && \
-    R -e 'install.packages(c("mongolite", "snowflakes", "QuantLib"), dependencies = TRUE)'
+    R -e 'devtools::install_github("risktoollib/RTL")'
+    # R -e 'install.packages(c("mongolite", "snowflakes", "QuantLib"), dependencies = TRUE)'
 
 # Set environment variables for database connection configuration, user information, and other settings
 ENV CFLAGS="-I/usr/include/sasl" \
