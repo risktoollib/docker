@@ -16,6 +16,14 @@ jobs:
           username: ${{ secrets.DOCKER_HUB_USERNAME }}
           password: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
 
+      - name: Build and push Docker image (with python)
+        uses: docker/build-push-action@v2
+        with:
+          context: ./rstudio-python
+          file: ./rstudio-python/Dockerfile
+          push: true
+          tags: risktoollib/rstudio-python:latest
+          
       - name: Build and push Docker image (with python and node)
         uses: docker/build-push-action@v2
         with:
