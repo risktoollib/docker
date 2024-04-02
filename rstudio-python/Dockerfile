@@ -61,7 +61,8 @@ RUN echo "rstudio:rstudio" | chpasswd && \
     chown rstudio:rstudio /home/rstudio && \
     echo "rstudio ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers && \
     echo "copilot-enabled=1" >> /etc/rstudio/rsession.conf && \
-    chmod -R 777 /home
+    chmod -R 777 /home && \ 
+    quarto install tinytex
 
 WORKDIR /home/rstudio
 EXPOSE 8787
