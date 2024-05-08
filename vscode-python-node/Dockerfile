@@ -34,7 +34,7 @@ RUN R CMD javareconf && \
     | tee /usr/local/lib/R/etc/Rprofile.site | tee /usr/lib/R/etc/Rprofile.site && \
     Rscript /tmp/r_packages.R && \
     R -e 'devtools::install_github("risktoollib/RTL")' && \
-    R -e 'install.packages(c("mongolite","snowflakes","QuantLib"), dependencies = TRUE)'
+    R -e 'install.packages(c("mongolite","snowflakes","RQuantLib"), dependencies = TRUE)'
 
 # Database connection configuration
 RUN pkg-config --cflags --libs libsasl2 
