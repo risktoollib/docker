@@ -1,7 +1,7 @@
 # Use the official Node.js LTS image as the base image
 FROM node:lts
 
-# Install dependencies for VS Code remote development, Python, and downloading the .deb package
+# Install dependencies for VS Code remote development, Python, Quarto, and downloading the .deb package
 RUN apt-get update && apt-get install -y \
     sudo \
     git \
@@ -56,6 +56,11 @@ RUN wget https://github.com/posit-dev/positron/releases/download/2024.07.0-41/Po
     && sudo apt-get install -f \
     && rm /tmp/positron.deb
 
+# Install Quarto
+RUN wget https://github.com/quarto-dev/quarto-cli/releases/download/v1.3.360/quarto-1.3.360-linux-amd64.deb -O /tmp/quarto.deb \
+    && sudo dpkg -i /tmp/quarto.deb \
+    && rm /tmp/quarto.deb
+
 # Create a non-root user and set permissions
 ARG USERNAME=positron
 ARG USER_UID=1000
@@ -97,6 +102,9 @@ WORKDIR /home/$USERNAME/app
 
 # Copy project files into the working directory
 COPY . /home/$USERNAME/app
+
+# Install project dependencies
+RUN npm install
 
 # Expose the application port
 EXPOSE 3000
