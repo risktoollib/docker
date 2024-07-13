@@ -62,7 +62,7 @@ RUN wget https://github.com/quarto-dev/quarto-cli/releases/download/v1.3.361/qua
     && sudo apt-get install -f \
     && rm /tmp/quarto.deb
 
-# Create a non-root user and set permissions
+# Create a non-root user with sudo privileges and set password
 ARG USERNAME=positron
 ARG USER_UID=1000
 ARG USER_GID=$USER_UID
@@ -74,6 +74,7 @@ RUN if getent passwd $USER_UID > /dev/null; then \
         groupadd --gid $USER_GID $USERNAME; \
     fi \
     && useradd --uid $USER_UID --gid $USER_GID -m $USERNAME \
+    && echo "$USERNAME:$USERNAME" | chpasswd \
     && usermod -aG sudo $USERNAME \
     && echo "$USERNAME ALL=(ALL) NOPASSWD:ALL" > /etc/sudoers.d/$USERNAME \
     && chmod 0440 /etc/sudoers.d/$USERNAME
@@ -90,7 +91,6 @@ COPY requirements.txt r_packages.R .
 # Set up Python environment, install dependencies, and run additional setup commands
 RUN python3.11 -m venv env \
     && ./env/bin/pip install --no-cache-dir -r requirements.txt \
-    && npm install -g playwright axios cheerio \
     && npx playwright install-deps \
     && npx playwright install \
     && R CMD javareconf \
