@@ -25,7 +25,14 @@ RUN apt-get update && apt-get install -y \
     libssl-dev \
     libsasl2-dev \
     libv8-dev \
-    libatk-bridge2.0-0 libatspi2.0-0 libgbm1 libgtk-3-0 libgtk-4-1 libxkbfile1  libxkbcommon0 libxkbcommon0 xdg-utils \ 
+    libatk-bridge2.0-0 \
+    libatspi2.0-0 \
+    libgbm1 \
+    libgtk-3-0 \
+    libgtk-4-1 \
+    libxkbfile1 \
+    libxkbcommon0 \
+    xdg-utils \
     libxml2-dev \
     tcl \
     tk \
@@ -54,7 +61,10 @@ ARG USERNAME=positron
 ARG USER_UID=1000
 ARG USER_GID=$USER_UID
 
-RUN if ! getent group $USER_GID; then \
+RUN if getent passwd $USER_UID > /dev/null; then \
+        USER_UID=$(($USER_UID + 1)); \
+    fi \
+    && if ! getent group $USER_GID; then \
         groupadd --gid $USER_GID $USERNAME; \
     fi \
     && useradd --uid $USER_UID --gid $USER_GID -m $USERNAME \
