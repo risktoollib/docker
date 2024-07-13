@@ -76,33 +76,6 @@ RUN if getent passwd $USER_UID > /dev/null; then \
 USER $USERNAME
 
 # Set up the working directory
-WORKDIR /home
+WORKDIR /home/$USERNAME
 
-# Copy requirements and R script files into the working directory
-COPY requirements.txt r_packages.R .
-
-# Set up Python environment, install dependencies, and run additional setup commands
-RUN python3.11 -m venv env \
-    && ./env/bin/pip install --no-cache-dir -r requirements.txt \
-    && npm install -g playwright axios cheerio \
-    && npx playwright install-deps \
-    && npx playwright install \
-    && R CMD javareconf \
-    && Rscript r_packages.R \
-    && R -e 'devtools::install_github("risktoollib/RTL")' \
-    && R -e 'install.packages(c("mongolite", "snowflakes", "RQuantLib"), dependencies = TRUE)'
-
-# Set up the working directory for the application
-WORKDIR /home/$USERNAME/app
-
-# Copy project files into the working directory
-COPY . /home/$USERNAME/app
-
-# Install project dependencies
-RUN npm install
-
-# Expose the application port
-EXPOSE 3000
-
-# Start the application
-CMD ["npm", "start"]
+# Copy requirements and R script files into the working director
