@@ -15,7 +15,14 @@ jobs:
         with:
           username: ${{ secrets.DOCKER_HUB_USERNAME }}
           password: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
-
+      - name: Build and push Docker image (positron)
+        uses: docker/build-push-action@v2
+        with:
+          context: ./positron
+          file: ./positron/Dockerfile
+          push: true
+          tags: risktoollib/positron:latest
+          
       - name: Build and push Docker image (with python)
         uses: docker/build-push-action@v2
         with:
