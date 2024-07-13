@@ -25,7 +25,7 @@ RUN apt-get update && apt-get install -y \
     libssl-dev \
     libsasl2-dev \
     libv8-dev \
-    libatk-bridge2.0-0 libatspi2.0-0 libgbm1 libgtk-4-1 libxkbcommon0 libxkbcommon0 xdg-utils \ 
+    libatk-bridge2.0-0 libatspi2.0-0 libgbm1 libgtk-3-0 libgtk-4-1 libxkbfile1  libxkbcommon0 libxkbcommon0 xdg-utils \ 
     libxml2-dev \
     tcl \
     tk \
