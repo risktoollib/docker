@@ -48,7 +48,16 @@ RUN apt-get update && apt-get install -y \
     python3-pip \
     pkg-config \
     xz-utils \
+    software-properties-common \
+    dirmngr \
     && apt-get clean
+
+# Update indices and add CRAN signing key and repository for R 4.0
+RUN apt-get update -qq \
+    && wget -qO- https://cloud.r-project.org/bin/linux/ubuntu/marutter_pubkey.asc | sudo tee -a /etc/apt/trusted.gpg.d/cran_ubuntu_key.asc \
+    && sudo add-apt-repository "deb https://cloud.r-project.org/bin/linux/ubuntu $(lsb_release -cs)-cran40/" \
+    && sudo apt update -qq \
+    && sudo apt install --no-install-recommends r-base -y
 
 # Download and install Positron
 RUN wget https://github.com/posit-dev/positron/releases/download/2024.07.0-41/Positron-2024.07.0-41.deb -O /tmp/positron.deb \
