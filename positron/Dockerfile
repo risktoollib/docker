@@ -7,6 +7,7 @@ RUN apt-get update && apt-get install -y \
     git \
     ssh \
     wget \
+    build-essential \
     && apt-get install -y --no-install-recommends \
     libglpk-dev \
     libprotobuf-dev \
@@ -97,6 +98,10 @@ USER $USERNAME
 # Set up the working directory
 WORKDIR /home/$USERNAME
 
+# Set R_LIBS_USER to a writable directory in the user's home
+ENV R_LIBS_USER=/home/$USERNAME/R/x86_64-pc-linux-gnu-library/4.0
+RUN mkdir -p $R_LIBS_USER
+
 # Copy requirements and R script files into the working directory
 COPY requirements.txt r_packages.R .
 
@@ -104,8 +109,10 @@ COPY requirements.txt r_packages.R .
 RUN python3.11 -m venv env \
     && ./env/bin/pip install --no-cache-dir -r requirements.txt \
     && npx playwright install-deps \
-    && npx playwright install \
-    && sudo Rscript r_packages.R \
+    && npx playwright install
+
+# Run R script and install R packages with sudo
+RUN sudo Rscript r_packages.R \
     && sudo R -e 'devtools::install_github("risktoollib/RTL")' \
     && sudo R -e 'install.packages(c("mongolite", "snowflakes", "RQuantLib"), dependencies = TRUE)'
 
@@ -115,8 +122,11 @@ WORKDIR /home/$USERNAME/app
 # Copy project files into the working directory
 COPY . /home/$USERNAME/app
 
-# Install project dependencies
+# Ensure npm install runs with proper permissions
+USER root
+COPY package.json package-lock.json ./
 RUN npm install
+USER $USERNAME
 
 # Expose the application port
 EXPOSE 3000
