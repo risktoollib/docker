@@ -105,9 +105,9 @@ RUN python3.11 -m venv env \
     && ./env/bin/pip install --no-cache-dir -r requirements.txt \
     && npx playwright install-deps \
     && npx playwright install \
-    && Rscript r_packages.R \
-    && R -e 'devtools::install_github("risktoollib/RTL")' \
-    && R -e 'install.packages(c("mongolite", "snowflakes", "RQuantLib"), dependencies = TRUE)'
+    && sudo Rscript r_packages.R \
+    && sudo R -e 'devtools::install_github("risktoollib/RTL")' \
+    && sudo R -e 'install.packages(c("mongolite", "snowflakes", "RQuantLib"), dependencies = TRUE)'
 
 # Set up the working directory for the application
 WORKDIR /home/$USERNAME/app
