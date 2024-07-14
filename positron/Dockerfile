@@ -71,6 +71,9 @@ RUN wget https://github.com/quarto-dev/quarto-cli/releases/download/v1.3.361/qua
     && sudo apt-get install -f \
     && rm /tmp/quarto.deb
 
+# Run R CMD javareconf as root to avoid permission issues
+RUN sudo R CMD javareconf
+
 # Create a non-root user with sudo privileges and set password
 ARG USERNAME=positron
 ARG USER_UID=1000
@@ -102,7 +105,6 @@ RUN python3.11 -m venv env \
     && ./env/bin/pip install --no-cache-dir -r requirements.txt \
     && npx playwright install-deps \
     && npx playwright install \
-    && R CMD javareconf \
     && Rscript r_packages.R \
     && R -e 'devtools::install_github("risktoollib/RTL")' \
     && R -e 'install.packages(c("mongolite", "snowflakes", "RQuantLib"), dependencies = TRUE)'
