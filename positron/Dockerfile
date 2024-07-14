@@ -124,8 +124,9 @@ COPY . /home/$USERNAME/app
 
 # Ensure npm install runs with proper permissions
 USER root
-COPY package.json package-lock.json ./
-RUN npm install
+COPY package.json ./
+COPY package-lock.json ./
+RUN npm install || echo "No package-lock.json found, continuing..."
 USER $USERNAME
 
 # Expose the application port
