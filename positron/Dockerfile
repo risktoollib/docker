@@ -122,6 +122,15 @@ WORKDIR /home/$USERNAME/app
 # Copy project files into the working directory
 COPY . /home/$USERNAME/app
 
+# Copy package.json and package-lock.json if they exist
+COPY package.json ./
+COPY package-lock.json ./
+
+# Ensure npm install runs with proper permissions
+USER root
+RUN npm install
+USER $USERNAME
+
 # Expose the application port
 EXPOSE 3000
 
