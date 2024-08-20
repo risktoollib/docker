@@ -44,7 +44,7 @@ WORKDIR /home
 COPY requirements.txt r_packages.R .
 RUN python3.11 -m venv env \
     && ./env/bin/pip3 install --no-cache-dir -r requirements.txt \
-    && curl -sL https://nodejs.org/dist/v20.11.1/node-v20.11.1-linux-x64.tar.xz -o node.tar.xz \
+    && curl -sL https://nodejs.org/dist/v20.16.0/node-v20.16.0-linux-x64.tar.xz -o node.tar.xz \
     && xz -d node.tar.xz \
     && tar -xf node.tar -C /usr/local --strip-components=1 \
     && rm node.tar \
