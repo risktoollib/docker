@@ -17,9 +17,9 @@ I recommend using the `rstudio-python-node` container as it has the most feature
 ``` bash
 python3.11 -m venv env
 source ./env/bin/activate
-pip3 install scipy pandas numpy plotly pyarrow pandas-datareader yfinance kaleido plotnine streamlit manim
-pip3 install git+https://github.com/bbcho/risktools-dev.git
-pip3 freeze > ~/docker/rstudio-python-node/requirements.txt
-pip3 freeze > ~/docker/vscode-python-node/requirements.txt
-pip3 freeze > ~/data/requirements.txt
+pip3.11 install scipy pandas numpy plotly pyarrow pandas-datareader yfinance kaleido plotnine streamlit manim
+pip3.11 install git+https://github.com/bbcho/risktools-dev.git
+pip3.11 freeze | grep -v "pyobjc" > ~/docker/rstudio-python-node/requirements.txt
+pip3.11 freeze | grep -v "pyobjc" > ~/docker/vscode-python-node/requirements.txt
+pip3.11 freeze | grep -v "pyobjc" > ~/data/requirements.txt
 ```
