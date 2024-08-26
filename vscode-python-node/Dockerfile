@@ -8,7 +8,7 @@ RUN echo 'debconf debconf/frontend select Noninteractive' | debconf-set-selectio
     zlib1g-dev openjdk-17-jdk libfontconfig1-dev gdal-bin libgdal-dev libhiredis-dev \
     firefox gnupg2 software-properties-common libfontconfig1 libxrender1 libxtst6 libxi6 \
     jags libavfilter-dev librsvg2-dev poppler-utils cargo libmagick++-dev libpoppler-cpp-dev libtesseract-dev libleptonica-dev tesseract-ocr-eng \
-    xz-utils python3.11 python3.11-dev python3.11-venv python3-pip libglpk-dev tar \
+    xz-utils libpangocairo-1.0-dev python3.11 python3.11-dev python3.11-venv python3-pip libglpk-dev tar \
     && rm -rf /var/lib/apt/lists/*
 
 # Setup Python environment
