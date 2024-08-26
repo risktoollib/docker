@@ -43,8 +43,8 @@ RUN apt-get update && \
 WORKDIR /home
 COPY requirements.txt r_packages.R .
 RUN python3.11 -m venv env\
-    && source ./env/bin/activate \
-    && ./env/bin/pip3.11 install --no-cache-dir -r requirements.txt \
+    && . /home/env/bin/activate \
+    && /home/env/bin/pip3.11 install --no-cache-dir -r requirements.txt \
     && curl -sL https://nodejs.org/dist/v20.16.0/node-v20.16.0-linux-x64.tar.xz -o node.tar.xz \
     && xz -d node.tar.xz \
     && tar -xf node.tar -C /usr/local --strip-components=1 \
