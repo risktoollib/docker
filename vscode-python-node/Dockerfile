@@ -13,10 +13,10 @@ RUN echo 'debconf debconf/frontend select Noninteractive' | debconf-set-selectio
 
 # Setup Python environment
 WORKDIR /home
-COPY requirements.txt .
+COPY requirements.txt r_packages.R .
 RUN python3.11 -m venv env\
     && . /home/env/bin/activate \
-    && /home/env/bin/pip3.11 install --no-cache-dir -r requirements.txt \
+    && /home/env/bin/pip3.11 install --no-cache-dir -r requirements.txt 
 ENV PATH="/home/env/bin:$PATH"
 
 # Install Node.js and npm packages
