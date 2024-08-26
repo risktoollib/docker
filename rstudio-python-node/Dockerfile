@@ -29,7 +29,7 @@ RUN apt-get update && \
         openjdk-17-jdk \
         libfontconfig1-dev \
         gdal-bin \
-        libgdal-dev libpangocairo-1.0-dev \
+        libgdal-dev libpango1.0-dev \
         python3.11 \
         python3.11-dev \
         python3.11-venv \
