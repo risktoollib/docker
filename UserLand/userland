@@ -1,0 +1,45 @@
+# Update and upgrade system packages
+sudo apt update && sudo apt upgrade -y
+
+# Install essential server packages
+sudo apt install -y openssh-server apache2 build-essential libssl-dev libcurl4-openssl-dev libxml2-dev software-properties-common gdebi-core cron
+
+# Install dependencies for building R from source
+sudo apt install -y build-essential gfortran libreadline-dev libx11-dev libxt-dev \
+libpng-dev libjpeg-dev libcairo2-dev libgtk2.0-dev libtiff5-dev \
+libblas-dev liblapack-dev libncurses5-dev libbz2-dev liblzma-dev \
+libpcre2-dev zlib1g-dev curl libcurl4-openssl-dev
+
+# Download and install R 4.4 from source
+wget https://cran.r-project.org/src/base/R-4/R-4.4.0.tar.gz
+tar -xzvf R-4.4.0.tar.gz
+cd R-4.4.0
+./configure --enable-R-shlib
+make
+sudo make install
+
+# Go back to home directory after installation
+cd ..
+
+# Verify the installed R version
+R --version
+
+# Download and install the latest 2024 version of RStudio Server
+wget https://download2.rstudio.org/server/jammy/amd64/rstudio-server-2024.01.0-550-amd64.deb
+sudo gdebi -n rstudio-server-2024.01.0-550-amd64.deb
+
+# Ensure cron is running and add RStudio Server to startup using cron (since systemd is unavailable)
+sudo service cron start
+(crontab -l 2>/dev/null; echo "@reboot /usr/lib/rstudio-server/bin/rserver") | sudo crontab -
+
+# Start RStudio Server manually (since systemd is unavailable)
+sudo rstudio-server start
+
+# Open the default RStudio Server port (8787) in the firewall (if firewall is used)
+sudo ufw allow 8787/tcp
+
+# Output the status of RStudio Server
+sudo rstudio-server status
+
+# Installation complete message
+echo "Installation complete. You can access RStudio Server by visiting http://localhost:8787 or http://<your-ip-address>:8787 in your browser."
