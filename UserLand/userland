@@ -1,45 +1,72 @@
 # Update and upgrade system packages
 sudo apt update && sudo apt upgrade -y
 
-# Install essential server packages
-sudo apt install -y openssh-server apache2 build-essential libssl-dev libcurl4-openssl-dev libxml2-dev software-properties-common gdebi-core cron
+# Install essential server packages, including libgit2-dev
+sudo apt install -y openssh-server apache2 build-essential libssl-dev libcurl4-openssl-dev libxml2-dev software-properties-common gdebi-core cron bash-completion default-jdk libgmp3-dev libmpfr-dev libgit2-dev
 
-# Install dependencies for building R from source
-sudo apt install -y build-essential gfortran libreadline-dev libx11-dev libxt-dev \
-libpng-dev libjpeg-dev libcairo2-dev libgtk2.0-dev libtiff5-dev \
-libblas-dev liblapack-dev libncurses5-dev libbz2-dev liblzma-dev \
-libpcre2-dev zlib1g-dev curl libcurl4-openssl-dev
+# Install Python 3.11 and Node.js
+sudo apt install -y python3.11 python3.11-dev python3.11-venv nodejs npm
 
-# Download and install R 4.4 from source
-wget https://cran.r-project.org/src/base/R-4/R-4.4.0.tar.gz
-tar -xzvf R-4.4.0.tar.gz
-cd R-4.4.0
-./configure --enable-R-shlib
-make
-sudo make install
+# Fix 'no module apt_pkg' by installing python3-apt and linking the apt_pkg module for Python 3.11
+sudo apt install -y python3-apt
+sudo ln -s /usr/lib/python3/dist-packages/apt_pkg.cpython-310-x86_64-linux-gnu.so /usr/lib/python3.11/site-packages/apt_pkg.so
 
-# Go back to home directory after installation
-cd ..
+# Update Python alternatives to use Python 3.11 by default
+sudo update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.11 1
+
+# Enable bash autocomplete
+sudo apt install bash-completion
+echo "source /etc/profile.d/bash_completion.sh" >> ~/.bashrc
+source ~/.bashrc
+
+# Update indices for R and install necessary helper packages
+sudo apt update -qq
+sudo apt install --no-install-recommends software-properties-common dirmngr
+
+# Add the signing key for the CRAN repository (Michael Rutter's key)
+wget -qO- https://cloud.r-project.org/bin/linux/ubuntu/marutter_pubkey.asc | sudo tee -a /etc/apt/trusted.gpg.d/cran_ubuntu_key.asc
+
+# Add the CRAN repository for R (adjust focal to other versions if needed)
+sudo add-apt-repository "deb https://cloud.r-project.org/bin/linux/ubuntu $(lsb_release -cs)-cran40/"
+
+# Update and install R 4.4
+sudo apt update -qq
+sudo apt install -y r-base
 
 # Verify the installed R version
 R --version
 
-# Download and install the latest 2024 version of RStudio Server
-wget https://download2.rstudio.org/server/jammy/amd64/rstudio-server-2024.01.0-550-amd64.deb
-sudo gdebi -n rstudio-server-2024.01.0-550-amd64.deb
+# Install R packages directly from the embedded r_packages.R content
+R CMD javareconf
+R --slave -e 'install.packages(c("tidyverse", "shiny", "devtools"), repos="https://packagemanager.posit.co/cran/__linux__/jammy/latest")'
+
+# Download and install RStudio Server 2023.03.0-386 (ARM64)
+wget https://s3.amazonaws.com/rstudio-ide-build/server/jammy/arm64/rstudio-server-2023.03.0-386-arm64.deb
+
+# Install the RStudio Server .deb package using gdebi
+sudo gdebi -n rstudio-server-2023.03.0-386-arm64.deb
+
+# Add RStudio user with password
+sudo useradd -m -s /bin/bash rstudio
+echo "rstudio:rstudio" | sudo chpasswd
+sudo usermod -aG sudo rstudio  # Optional: give rstudio user sudo rights
 
 # Ensure cron is running and add RStudio Server to startup using cron (since systemd is unavailable)
 sudo service cron start
 (crontab -l 2>/dev/null; echo "@reboot /usr/lib/rstudio-server/bin/rserver") | sudo crontab -
 
 # Start RStudio Server manually (since systemd is unavailable)
-sudo rstudio-server start
+sudo /usr/lib/rstudio-server/bin/rserver
 
 # Open the default RStudio Server port (8787) in the firewall (if firewall is used)
 sudo ufw allow 8787/tcp
 
+# Clean up unused packages
+sudo apt-get autoremove -y
+
 # Output the status of RStudio Server
-sudo rstudio-server status
+sudo /usr/lib/rstudio-server/bin/rserver --server-daemonize=0 &
 
 # Installation complete message
 echo "Installation complete. You can access RStudio Server by visiting http://localhost:8787 or http://<your-ip-address>:8787 in your browser."
+echo "Login to RStudio Server with username: rstudio and password: rstudio"
