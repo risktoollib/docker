@@ -1,9 +1,12 @@
 FROM rocker/tidyverse:latest
 
-# Install system dependencies and clean up in the same command to reduce image    
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
-        software-properties-common libglpk-dev \
+        software-properties-common && \
+    add-apt-repository ppa:deadsnakes/ppa && \
+    apt-get update && \
+    apt-get install -y --no-install-recommends \
+        libglpk-dev \
         libprotobuf-dev \
         protobuf-compiler \
         libjq-dev \
@@ -29,7 +32,8 @@ RUN apt-get update && \
         openjdk-17-jdk \
         libfontconfig1-dev \
         gdal-bin \
-        libgdal-dev libpango1.0-dev \
+        libgdal-dev \
+        libpango1.0-dev \
         python3.11 \
         python3.11-dev \
         python3.11-venv \
