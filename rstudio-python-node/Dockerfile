@@ -3,7 +3,7 @@ FROM rocker/tidyverse:latest
 # Install system dependencies and clean up in the same command to reduce image    
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
-        libglpk-dev \
+        software-properties-common libglpk-dev \
         libprotobuf-dev \
         protobuf-compiler \
         libjq-dev \
