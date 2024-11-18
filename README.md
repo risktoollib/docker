@@ -12,7 +12,7 @@ I recommend using the `rstudio-python-node` container as it has the most feature
 
 #### Building Python Envs
 
--- this is documentation for the package maintainer --
+-- this is documentation for the package maintainer -- 
 
 ``` bash
 python3.11 -m venv env
