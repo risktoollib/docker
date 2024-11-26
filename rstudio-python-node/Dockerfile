@@ -34,9 +34,9 @@ RUN apt-get update && \
         gdal-bin \
         libgdal-dev \
         libpango1.0-dev \
-        python3.11 \
-        python3.11-dev \
-        python3.11-venv \
+        python3.12 \
+        python3.12-dev \
+        python3.12-venv \
         python3-pip \
         pkg-config \
         xz-utils && \
