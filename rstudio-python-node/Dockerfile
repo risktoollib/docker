@@ -3,7 +3,7 @@ FROM rocker/tidyverse:latest
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
         software-properties-common && \
-    add-apt-repository ppa:deadsnakes/ppa && \
+    #add-apt-repository ppa:deadsnakes/ppa && \
     apt-get update && \
     apt-get install -y --no-install-recommends \
         libglpk-dev \
