@@ -24,11 +24,3 @@ jobs:
           push: true
           tags: risktoollib/rstudio-python-node:latest
 
-      - name: Build and push Docker image (with vscode and node)
-        uses: docker/build-push-action@v5  # Updated to a version that supports Node.js 16
-        with:
-          context: ./vscode-python-node
-          file: ./vscode-python-node/Dockerfile
-          push: true
-          tags: risktoollib/vscode-python-node:latest
-
