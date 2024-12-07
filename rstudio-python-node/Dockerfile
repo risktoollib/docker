@@ -46,9 +46,9 @@ RUN apt-get update && \
 # Setup python + virtual environment + node + r pacakages
 WORKDIR /home
 COPY requirements.txt r_packages.R .
-RUN python3.11 -m venv env\
+RUN python3.12 -m venv env\
     && . /home/env/bin/activate \
-    && /home/env/bin/pip3.11 install --no-cache-dir -r requirements.txt \
+    && /home/env/bin/pip3.12 install --no-cache-dir -r requirements.txt \
     && curl -sL https://nodejs.org/dist/v22.11.0/node-v22.11.0-linux-x64.tar.xz -o node.tar.xz \
     && xz -d node.tar.xz \
     && tar -xf node.tar -C /usr/local --strip-components=1 \
