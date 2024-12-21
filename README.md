@@ -15,11 +15,11 @@ I recommend using the `rstudio-python-node` container as it has the most feature
 -- this is documentation for the package maintainer -- 
 
 ``` bash
-python3.11 -m venv env
+python -m venv env
 source ./env/bin/activate
-pip3.11 install ipython pandas pandas-datareader numpy polars plotly plotnine pyarrow scipy yfinance streamlit manim 
-pip3.11 install git+https://github.com/bbcho/risktools-dev.git
-pip3.11 freeze | grep -v "pyobjc" > ~/docker/rstudio-python-node/requirements.txt
-pip3.11 freeze | grep -v "pyobjc" > ~/docker/vscode-python-node/requirements.txt
-pip3.11 freeze | grep -v "pyobjc" > ~/data/requirements.txt
+pip install ipython pandas pandas-datareader numpy polars plotly plotnine pyarrow scipy yfinance streamlit manim scikit-misc
+pip install git+https://github.com/bbcho/risktools-dev.git
+pip freeze | grep -v "pyobjc" > ~/docker/rstudio-python-node/requirements.txt
+pip freeze | grep -v "pyobjc" > ~/docker/vscode-python-node/requirements.txt
+pip freeze | grep -v "pyobjc" > ~/data/requirements.txt
 ```

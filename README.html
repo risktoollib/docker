@@ -373,13 +373,13 @@ environment.</li>
 <div id="building-python-envs" class="section level4">
 <h4>Building Python Envs</h4>
 <p>– this is documentation for the package maintainer –</p>
-<pre class="bash"><code>python3.11 -m venv env
+<pre class="bash"><code>python -m venv env
 source ./env/bin/activate
-pip3.11 install ipython pandas pandas-datareader numpy polars plotly plotnine pyarrow scipy yfinance streamlit manim 
-pip3.11 install git+https://github.com/bbcho/risktools-dev.git
-pip3.11 freeze | grep -v &quot;pyobjc&quot; &gt; ~/docker/rstudio-python-node/requirements.txt
-pip3.11 freeze | grep -v &quot;pyobjc&quot; &gt; ~/docker/vscode-python-node/requirements.txt
-pip3.11 freeze | grep -v &quot;pyobjc&quot; &gt; ~/data/requirements.txt</code></pre>
+pip install ipython pandas pandas-datareader numpy polars plotly plotnine pyarrow scipy yfinance streamlit manim scikit-misc
+pip install git+https://github.com/bbcho/risktools-dev.git
+pip freeze | grep -v &quot;pyobjc&quot; &gt; ~/docker/rstudio-python-node/requirements.txt
+pip freeze | grep -v &quot;pyobjc&quot; &gt; ~/docker/vscode-python-node/requirements.txt
+pip freeze | grep -v &quot;pyobjc&quot; &gt; ~/data/requirements.txt</code></pre>
 </div>
 </div>
 
