@@ -2,10 +2,7 @@ FROM rocker/tidyverse:latest
 
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
-        software-properties-common && \
-    #add-apt-repository ppa:deadsnakes/ppa && \
-    apt-get update && \
-    apt-get install -y --no-install-recommends \
+        software-properties-common \
         libglpk-dev \
         libprotobuf-dev \
         protobuf-compiler \
@@ -34,29 +31,47 @@ RUN apt-get update && \
         gdal-bin \
         libgdal-dev \
         libpango1.0-dev \
-        python3.12 \
-        python3.12-dev \
-        python3.12-venv \
-        python3-pip \
         pkg-config \
-        xz-utils && \
+        xz-utils \
+        wget \
+        build-essential \
+        libbz2-dev \
+        libreadline-dev \
+        libsqlite3-dev \
+        libffi-dev \
+        liblzma-dev \
+        uuid-dev && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
-# Setup python + virtual environment + node + r pacakages
+# Define Python version
+ENV PYTHON_VERSION=3.11.11
+
+# Install Python 3.11 from source
+RUN wget https://www.python.org/ftp/python/${PYTHON_VERSION}/Python-${PYTHON_VERSION}.tgz && \
+    tar -xvf Python-${PYTHON_VERSION}.tgz && \
+    cd Python-${PYTHON_VERSION} && \
+    ./configure --enable-optimizations --enable-shared && \
+    make -j$(nproc) && \
+    make altinstall && \
+    ldconfig && \
+    cd .. && \
+    rm -rf Python-${PYTHON_VERSION} Python-${PYTHON_VERSION}.tgz
+
+# Setup Python virtual environment, Node.js, and R packages
 WORKDIR /home
 COPY requirements.txt r_packages.R .
-RUN python3.12 -m venv env\
-    && . /home/env/bin/activate \
-    && /home/env/bin/pip3.12 install --no-cache-dir -r requirements.txt \
-    && curl -sL https://nodejs.org/dist/v22.11.0/node-v22.11.0-linux-x64.tar.xz -o node.tar.xz \
-    && xz -d node.tar.xz \
-    && tar -xf node.tar -C /usr/local --strip-components=1 \
-    && rm node.tar \
-    && npm install -g playwright axios cheerio \
-    && npx playwright install-deps \
-    && npx playwright install \
-    && R CMD javareconf && \
+RUN python3.11 -m venv env && \
+    . /home/env/bin/activate && \
+    /home/env/bin/pip install --no-cache-dir -r requirements.txt && \
+    curl -sL https://nodejs.org/dist/v22.11.0/node-v22.11.0-linux-x64.tar.xz -o node.tar.xz && \
+    xz -d node.tar.xz && \
+    tar -xf node.tar -C /usr/local --strip-components=1 && \
+    rm node.tar && \
+    npm install -g playwright axios cheerio && \
+    npx playwright install-deps && \
+    npx playwright install && \
+    R CMD javareconf && \
     Rscript r_packages.R && \
     R -e 'devtools::install_github("risktoollib/RTL")' && \
     R -e 'install.packages(c("mongolite", "snowflakes"), dependencies = TRUE)'
@@ -68,12 +83,12 @@ ENV CFLAGS="-I/usr/include/sasl" \
     PASSWORD=rstudio \
     ROOT=true
 
-# Existing RUN command with modifications for user setup and environment configuration
+# Configure RStudio and TinyTeX
 RUN echo "rstudio:rstudio" | chpasswd && \
     chown rstudio:rstudio /home/rstudio && \
     echo "rstudio ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers && \
     echo "copilot-enabled=1" >> /etc/rstudio/rsession.conf && \
-    chmod -R 777 /home && \ 
+    chmod -R 777 /home && \
     quarto install tinytex
 
 WORKDIR /home/rstudio
