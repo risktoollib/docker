@@ -19,7 +19,12 @@ RUN apt-get update && \
         libnss3-dev \
         tk-dev \
         uuid-dev \
-        xz-utils && \
+        xz-utils \
+        libpango1.0-dev \
+        libcairo2-dev \
+        libglib2.0-dev \
+        libharfbuzz-dev \
+        libfribidi-dev && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
