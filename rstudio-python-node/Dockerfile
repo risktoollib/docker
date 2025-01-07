@@ -6,6 +6,7 @@ RUN apt-get update && \
     apt-get install -y --no-install-recommends \
         build-essential \
         wget \
+        curl \
         libssl-dev \
         libffi-dev \
         zlib1g-dev \
@@ -54,6 +55,7 @@ RUN /usr/local/bin/python3.12 -m venv env && \
 
 # Install Node.js and npm
 RUN curl -fsSL https://deb.nodesource.com/setup_18.x | bash - && \
+    apt-get update && \
     apt-get install -y --no-install-recommends nodejs && \
     npm install -g playwright axios cheerio && \
     npx playwright install-deps && \
