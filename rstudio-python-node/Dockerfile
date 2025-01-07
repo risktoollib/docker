@@ -6,7 +6,6 @@ RUN apt-get update && \
     apt-get install -y --no-install-recommends \
         build-essential \
         wget \
-        curl \
         libssl-dev \
         libffi-dev \
         zlib1g-dev \
@@ -21,13 +20,13 @@ RUN apt-get update && \
         tk-dev \
         uuid-dev \
         xz-utils \
-        libpango1.0-dev \
-        libcairo2-dev \
-        libglib2.0-dev \
-        libharfbuzz-dev \
-        libfribidi-dev && \
+        openjdk-17-jdk && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
+
+# Set JAVA_HOME for Java installation
+ENV JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64
+ENV PATH=$JAVA_HOME/bin:$PATH
 
 # Build Python 3.12 from source with --enable-shared
 WORKDIR /usr/src
@@ -37,25 +36,22 @@ RUN wget https://www.python.org/ftp/python/3.12.0/Python-3.12.0.tgz && \
     ./configure --enable-optimizations --enable-shared && \
     make -j$(nproc) && \
     make altinstall && \
+    ln -s /usr/local/bin/python3.12 /usr/bin/python3.12 && \
+    ln -s /usr/local/bin/pip3.12 /usr/bin/pip3.12 && \
     ldconfig && \
     cd .. && \
     rm -rf Python-3.12.0 Python-3.12.0.tgz
 
-# Avoid creating redundant symbolic links
-RUN ln -sf /usr/local/bin/python3.12 /usr/bin/python3.12 && \
-    ln -sf /usr/local/bin/pip3.12 /usr/bin/pip3.12
-
 # Set up Python virtual environment
 WORKDIR /home
 COPY requirements.txt r_packages.R .
-RUN /usr/local/bin/python3.12 -m venv env && \
+RUN python3.12 -m venv env && \
     . /home/env/bin/activate && \
     pip install --no-cache-dir --upgrade pip setuptools wheel && \
     pip install --no-cache-dir -r requirements.txt
 
 # Install Node.js and npm
 RUN curl -fsSL https://deb.nodesource.com/setup_18.x | bash - && \
-    apt-get update && \
     apt-get install -y --no-install-recommends nodejs && \
     npm install -g playwright axios cheerio && \
     npx playwright install-deps && \
