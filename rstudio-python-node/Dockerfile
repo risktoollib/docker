@@ -31,16 +31,18 @@ RUN wget https://www.python.org/ftp/python/3.12.0/Python-3.12.0.tgz && \
     ./configure --enable-optimizations --enable-shared && \
     make -j$(nproc) && \
     make altinstall && \
-    ln -s /usr/local/bin/python3.12 /usr/bin/python3.12 && \
-    ln -s /usr/local/bin/pip3.12 /usr/bin/pip3.12 && \
     ldconfig && \
     cd .. && \
     rm -rf Python-3.12.0 Python-3.12.0.tgz
 
+# Avoid creating redundant symbolic links
+RUN ln -sf /usr/local/bin/python3.12 /usr/bin/python3.12 && \
+    ln -sf /usr/local/bin/pip3.12 /usr/bin/pip3.12
+
 # Set up Python virtual environment
 WORKDIR /home
 COPY requirements.txt r_packages.R .
-RUN python3.12 -m venv env && \
+RUN /usr/local/bin/python3.12 -m venv env && \
     . /home/env/bin/activate && \
     pip install --no-cache-dir --upgrade pip setuptools wheel && \
     pip install --no-cache-dir -r requirements.txt
