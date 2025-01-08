@@ -36,8 +36,8 @@ RUN wget https://www.python.org/ftp/python/3.12.0/Python-3.12.0.tgz && \
     ./configure --enable-optimizations --enable-shared && \
     make -j$(nproc) && \
     make altinstall && \
-    ln -s /usr/local/bin/python3.12 /usr/bin/python3.12 && \
-    ln -s /usr/local/bin/pip3.12 /usr/bin/pip3.12 && \
+    ln -sf /usr/local/bin/python3.12 /usr/bin/python3.12 && \
+    ln -sf /usr/local/bin/pip3.12 /usr/bin/pip3.12 && \
     ldconfig && \
     cd .. && \
     rm -rf Python-3.12.0 Python-3.12.0.tgz
@@ -51,7 +51,7 @@ RUN python3.12 -m venv env && \
     pip install --no-cache-dir -r requirements.txt
 
 # Install Node.js and npm
-RUN curl -fsSL https://deb.nodesource.com/setup_18.x | bash - && \
+RUN curl -fsSL https://deb.nodesource.com/setup_lts.x | bash - && \
     apt-get install -y --no-install-recommends nodejs && \
     npm install -g playwright axios cheerio && \
     npx playwright install-deps && \
@@ -79,6 +79,4 @@ RUN echo "rstudio:rstudio" | chpasswd && \
     quarto install tinytex
 
 # Final settings
-WORKDIR /home/rstudio
-EXPOSE 8787
-CMD ["/init"]
+WORKDIR /home/
