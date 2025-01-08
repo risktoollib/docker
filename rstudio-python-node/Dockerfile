@@ -1,6 +1,10 @@
 # Base image from rocker/tidyverse
 FROM rocker/tidyverse:latest
 
+# Set environment variables for non-interactive installation
+ENV DEBIAN_FRONTEND=noninteractive
+ENV PYTHON_VERSION=3.12.0
+
 # Install required system packages
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
@@ -20,8 +24,11 @@ RUN apt-get update && \
         tk-dev \
         uuid-dev \
         xz-utils \
-        openjdk-17-jdk && \
-    apt-get clean && \
+        openjdk-17-jdk \
+        pkg-config \
+        libpango1.0-dev \
+        libcairo2-dev \
+        && apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
 # Set JAVA_HOME for Java installation
@@ -30,9 +37,9 @@ ENV PATH=$JAVA_HOME/bin:$PATH
 
 # Build Python 3.12 from source with --enable-shared
 WORKDIR /usr/src
-RUN wget https://www.python.org/ftp/python/3.12.0/Python-3.12.0.tgz && \
-    tar -xf Python-3.12.0.tgz && \
-    cd Python-3.12.0 && \
+RUN wget https://www.python.org/ftp/python/${PYTHON_VERSION}/Python-${PYTHON_VERSION}.tgz && \
+    tar -xf Python-${PYTHON_VERSION}.tgz && \
+    cd Python-${PYTHON_VERSION} && \
     ./configure --enable-optimizations --enable-shared && \
     make -j$(nproc) && \
     make altinstall && \
@@ -40,7 +47,7 @@ RUN wget https://www.python.org/ftp/python/3.12.0/Python-3.12.0.tgz && \
     ln -sf /usr/local/bin/pip3.12 /usr/bin/pip3.12 && \
     ldconfig && \
     cd .. && \
-    rm -rf Python-3.12.0 Python-3.12.0.tgz
+    rm -rf Python-${PYTHON_VERSION} Python-${PYTHON_VERSION}.tgz
 
 # Set up Python virtual environment
 WORKDIR /home
@@ -79,4 +86,6 @@ RUN echo "rstudio:rstudio" | chpasswd && \
     quarto install tinytex
 
 # Final settings
-WORKDIR /home/
+WORKDIR /home/rstudio
+EXPOSE 8787
+CMD ["/init"]
