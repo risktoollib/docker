@@ -9,6 +9,7 @@ ENV PYTHON_VERSION=3.12.0
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
         build-essential \
+        curl \
         wget \
         libssl-dev \
         libffi-dev \
