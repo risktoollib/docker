@@ -30,9 +30,8 @@ RUN apt-get update && \
         pkg-config \
         libpango1.0-dev \
         libcairo2-dev \
-        python3-pip \
-        nodejs \
-        && apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/*
+        python3-pip && \
+    apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/*
 
 # Set JAVA_HOME for Java installation
 ENV JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64
@@ -69,13 +68,17 @@ RUN uv python install 3.11 && \
 # Copy the R package installation script
 COPY r_packages.R /home/rstudio/env/
 
+# Set permissions for /home/rstudio/env directory
+RUN chmod -R 777 /home/rstudio/env && \
+    chown -R rstudio:rstudio /home/rstudio/env
+
 # Install R environment and packages
 RUN R CMD javareconf && \
     Rscript /home/rstudio/env/r_packages.R && \
     R -e 'devtools::install_github("risktoollib/RTL")' && \
     R -e 'install.packages(c("mongolite", "snowflakes"), dependencies = TRUE)'
 
-# Install Playwright and related npm packages
+# Install Node.js and Playwright
 RUN curl -fsSL https://deb.nodesource.com/setup_lts.x | bash - && \
     apt-get install -y --no-install-recommends nodejs && \
     npm install -g playwright axios cheerio && \
