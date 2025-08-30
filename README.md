@@ -17,7 +17,7 @@ I recommend using the `rstudio-python-node` container as it has the most feature
 ``` bash
 python3.11 -m venv ~/env
 source ~/env/bin/activate
-pip3.12 install ipython requests pandas pandas-datareader numpy polars plotly plotnine pyarrow scipy yfinance streamlit manim setuptools playwright beautifulsoup4 lxml html5lib
+pip3.12 install ipython requests pandas pandas-datareader numpy polars plotly plotnine pyarrow scipy yfinance streamlit manim setuptools playwright beautifulsoup4 lxml html5lib openpyxl
 pip3.12 install git+https://github.com/bbcho/risktools-dev.git
 python -m playwright install chromium
 pip3.12 freeze | grep -v "pyobjc" > ~/docker/rstudio-python-node/requirements.txt
@@ -31,7 +31,7 @@ With `uv` MacOS or Linux
 python3.12 -m venv ~/env
 source ~/env/bin/activate
 pip install uv
-uv pip install ipython requests pandas pandas-datareader numpy polars plotly plotnine pyarrow scipy yfinance streamlit manim setuptools playwright beautifulsoup4 lxml html5lib
+uv pip install ipython requests pandas pandas-datareader numpy polars plotly plotnine pyarrow scipy yfinance streamlit manim setuptools playwright beautifulsoup4 lxml html5lib openpyxl
 uv pip install git+https://github.com/bbcho/risktools-dev.git
 python -m playwright install chromium
 uv pip freeze | grep -v "pyobjc" > ~/docker/rstudio-python-node/requirements.txt
@@ -47,7 +47,7 @@ py -3.12 -m venv env
 .\env\Scripts\Activate.ps1
 python -m pip install --upgrade pip
 python -m pip install -U uv
-uv pip install ipython requests pandas pandas-datareader numpy polars plotly plotnine pyarrow scipy yfinance streamlit manim setuptools playwright beautifulsoup4 lxml html5lib
+uv pip install ipython requests pandas pandas-datareader numpy polars plotly plotnine pyarrow scipy yfinance streamlit manim setuptools playwright beautifulsoup4 lxml html5lib openpyxl
 uv pip install git+https://github.com/bbcho/risktools-dev.git
 python -m playwright install chromium
 ``
