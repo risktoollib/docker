@@ -25,7 +25,7 @@ pip3.12 freeze | grep -v "pyobjc" > ~/docker/vscode-python-node/requirements.txt
 pip3.12 freeze | grep -v "pyobjc" > ~/data/requirements.txt
 ```
 
-With `uv`
+With `uv` MacOS or Linux
 
 ``` bash
 python3.12 -m venv ~/env
@@ -38,3 +38,16 @@ uv pip freeze | grep -v "pyobjc" > ~/docker/rstudio-python-node/requirements.txt
 uv pip freeze | grep -v "pyobjc" > ~/docker/vscode-python-node/requirements.txt
 uv pip freeze | grep -v "pyobjc" > ~/data/requirements.txt
 ```
+
+With `uv` on Windows - use Power Shell 7.
+
+``
+# Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass # (one-time) If activation is blocked in this PowerShell window:
+py -3.12 -m venv env
+.\env\Scripts\Activate.ps1
+python -m pip install --upgrade pip
+python -m pip install -U uv
+uv pip install ipython requests pandas pandas-datareader numpy polars plotly plotnine pyarrow scipy yfinance streamlit manim setuptools playwright beautifulsoup4 lxml html5lib
+uv pip install git+https://github.com/bbcho/risktools-dev.git
+python -m playwright install chromium
+``
