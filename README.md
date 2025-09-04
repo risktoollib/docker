@@ -34,9 +34,9 @@ pip install uv
 uv pip install ipython requests pandas pandas-datareader numpy polars plotly plotnine pyarrow scipy yfinance streamlit manim setuptools playwright beautifulsoup4 lxml html5lib openpyxl
 uv pip install git+https://github.com/bbcho/risktools-dev.git
 python -m playwright install chromium
-uv pip freeze | grep -v "pyobjc" > ~/docker/rstudio-python-node/requirements.txt
-uv pip freeze | grep -v "pyobjc" > ~/docker/vscode-python-node/requirements.txt
-uv pip freeze | grep -v "pyobjc" > ~/data/requirements.txt
+uv pip freeze --exclude-editable > ~/docker/rstudio-python-node/requirements.txt
+uv pip freeze --exclude-editable > ~/docker/rstudio-python-node/requirements.txt
+uv pip freeze --exclude-editable > ~/docker/rstudio-python-node/requirements.txt
 ```
 
 With `uv` on Windows - use Power Shell 7.
