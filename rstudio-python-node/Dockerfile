@@ -1,114 +1,103 @@
-# Base image from rocker/tidyverse
-FROM rocker/tidyverse:latest
+# Base: R + RStudio (Ubuntu 22.04 jammy)
+FROM rocker/rstudio:jammy
 
-# Set environment variables for non-interactive installation
-ENV DEBIAN_FRONTEND=noninteractive
-ENV PYTHON_VERSION=3.12.11
-ENV PY_PREFIX=/opt/python/${PYTHON_VERSION}
+LABEL org.opencontainers.image.source="https://github.com/your/repo"
+LABEL org.opencontainers.image.description="RStudio + Python 3.12 (shared lib) + Node + Quarto"
+LABEL org.opencontainers.image.licenses="MIT"
 
-# Install required system packages
-RUN apt-get update && \
+# ----- Build args -----
+ARG DEBIAN_FRONTEND=noninteractive
+ARG PYTHON_VERSION=3.12.11
+ARG PY_PREFIX=/opt/python/${PYTHON_VERSION}
+
+# ----- System deps -----
+RUN set -eux; \
+    apt-get update; \
     apt-get install -y --no-install-recommends \
-        build-essential \
-        curl \
-        wget \
-        libssl-dev \
-        libffi-dev \
-        zlib1g-dev \
-        libbz2-dev \
-        libreadline-dev \
-        libsqlite3-dev \
-        libncurses5-dev \
-        libncursesw5-dev \
-        libgdbm-dev \
-        liblzma-dev \
-        libnss3-dev \
-        tk-dev \
-        uuid-dev \
-        xz-utils \
-        openjdk-17-jdk \
-        pkg-config \
-        libpango1.0-dev \
-        libcairo2-dev \
-        && apt-get clean && \
+      build-essential \
+      curl wget ca-certificates gnupg \
+      xz-utils \
+      libssl-dev zlib1g-dev \
+      libbz2-dev libreadline-dev libsqlite3-dev \
+      libffi-dev liblzma-dev tk-dev \
+      libgdbm-dev libnss3-dev uuid-dev \
+      libncurses5-dev libncursesw5-dev \
+      libxml2-dev libxslt1-dev \
+      libsasl2-dev \
+      sudo \
+      libcurl4-openssl-dev \
+      software-properties-common; \
     rm -rf /var/lib/apt/lists/*
 
-# Set JAVA_HOME for Java installation
-ENV JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64
-ENV PATH=$JAVA_HOME/bin:$PATH
-
-# Build Python 3.12 from source with --enable-shared
-WORKDIR /tmp
-# Build from source with shared library
+# ----- Node.js LTS -----
 RUN set -eux; \
-    curl -fsSLO "https://www.python.org/ftp/python/${PYTHON_VERSION}/Python-${PYTHON_VERSION}.tgz" && \
-    tar -xzf "Python-${PYTHON_VERSION}.tgz" && \
-    cd "Python-${PYTHON_VERSION}" && \
+    curl -fsSL https://deb.nodesource.com/setup_lts.x | bash -; \
+    apt-get update; \
+    apt-get install -y --no-install-recommends nodejs; \
+    rm -rf /var/lib/apt/lists/*; \
+    node --version; npm --version
+
+# ----- Build & install CPython -----
+RUN set -eux; \
+    mkdir -p /tmp/src && cd /tmp/src; \
+    curl -fsSLO "https://www.python.org/ftp/python/${PYTHON_VERSION}/Python-${PYTHON_VERSION}.tgz"; \
+    tar -xzf "Python-${PYTHON_VERSION}.tgz"; \
+    cd "Python-${PYTHON_VERSION}"; \
     ./configure \
       --prefix="${PY_PREFIX}" \
       --enable-shared \
       --enable-optimizations \
-      --with-lto && \
-    make -j"$(nproc)" && make install && \
-    echo "${PY_PREFIX}/lib" > /etc/ld.so.conf.d/python${PYTHON_VERSION%.*}.conf && \
-    ldconfig && \
-    ln -sf "${PY_PREFIX}/bin/python3" /usr/local/bin/python3.12 && \
-    "${PY_PREFIX}/bin/python3" -m ensurepip --upgrade && \
-    "${PY_PREFIX}/bin/python3" -m pip install --upgrade pip setuptools wheel && \
-    cd /tmp && rm -rf "Python-${PYTHON_VERSION}" "Python-${PYTHON_VERSION}.tgz"
+      --with-lto; \
+    make -j"$(nproc)"; \
+    make install; \
+    echo "${PY_PREFIX}/lib" > "/etc/ld.so.conf.d/python${PYTHON_VERSION%.*}.conf"; \
+    ldconfig; \
+    ln -sf "${PY_PREFIX}/bin/python3" /usr/local/bin/python3.12; \
+    "${PY_PREFIX}/bin/python3" -m ensurepip --upgrade; \
+    "${PY_PREFIX}/bin/python3" -m pip install --upgrade pip setuptools wheel; \
+    cd /; \
+    rm -rf /tmp/src
 
-# Ensure the runtime can find libpython3.12.so
+# ----- Quarto -----
+RUN set -eux; \
+    curl -fsSL -o /tmp/quarto.deb https://quarto.org/download/latest/quarto-linux-amd64.deb || true; \
+    if [ -s /tmp/quarto.deb ]; then \
+      apt-get update && apt-get install -y --no-install-recommends /tmp/quarto.deb && rm -f /tmp/quarto.deb && rm -rf /var/lib/apt/lists/*; \
+      quarto --version || true; \
+      quarto install tinytex || true; \
+    fi
 
-# Create your global toolbox environment at /env and install uv + audit tool
-RUN "${PY_PREFIX}/bin/python3" -m venv /env \
- && /env/bin/python -m pip install --upgrade pip \
- && /env/bin/pip install uv pip-audit
+# ----- Python & R interoperability -----
+RUN set -eux; \
+    "${PY_PREFIX}/bin/pip" install --no-cache-dir \
+      numpy pandas scipy matplotlib jupyter jupyterlab \
+      rpy2
 
-ENV PATH="/env/bin:${PATH}"
-RUN chown -R rstudio:rstudio /env
-
-# Set up Python virtual environment using uv
-WORKDIR /home
-COPY requirements.txt r_packages.R .
-RUN python3 -m pip install --upgrade pip setuptools wheel \
- && python3 -m pip install uv pip-audit
-RUN python3 -m venv env \
- && . /home/env/bin/activate \
- && uv pip install --upgrade pip setuptools wheel \
- && uv pip install -r requirements.txt
-ENV PATH="/home/env/bin:${PATH}"
-RUN chown -R rstudio:rstudio /home/env
-
-
-# Install Node.js and npm
-RUN curl -fsSL https://deb.nodesource.com/setup_lts.x | bash - && \
-    apt-get install -y --no-install-recommends nodejs && \
-    npm install -g playwright axios cheerio && \
-    npx playwright install-deps && \
-    npx playwright install
-
-# Configure R environment and install packages
-RUN R CMD javareconf && \
-    Rscript r_packages.R && \
-    R -e 'devtools::install_github("risktoollib/RTL")' && \
-    R -e 'install.packages(c("mongolite", "snowflakes"), dependencies = TRUE)'
-
-# Configure environment variables
-ENV CFLAGS="-I/usr/include/sasl" \
+# ----- Environment configuration -----
+ENV PATH="${PY_PREFIX}/bin:${PATH}" \
+    PYTHONUNBUFFERED=1 \
+    PIP_NO_CACHE_DIR=1 \
+    CFLAGS="-I/usr/include/sasl" \
     LDFLAGS="-L/usr/lib" \
-    USER=rstudio \
-    # (Set RStudio password at runtime via -e PASSWORD=...)
-    # ROOT=true can also be set at runtime if needed
+    USER=rstudio
 
-# User setup and permissions
-RUN echo "rstudio:rstudio" | chpasswd && \
-    chown rstudio:rstudio /home/rstudio && \
-    echo "rstudio ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers && \
-    echo "copilot-enabled=1" >> /etc/rstudio/rsession.conf && \
-    chmod -R 777 /home && \
-    quarto install tinytex
-
-# Final settings
-WORKDIR /home/rstudio
+# RStudio Server port
 EXPOSE 8787
-CMD ["/init"]
+
+# ----- User setup -----
+# Runtime environment variables (not baked in):
+#   -e PASSWORD=...   (RStudio password)
+#   -e ROOT=true      (optional, root access)
+RUN set -eux; \
+    id rstudio >/dev/null 2>&1 || useradd -m -s /bin/bash rstudio; \
+    echo "rstudio:rstudio" | chpasswd; \
+    chown -R rstudio:rstudio /home/rstudio; \
+    echo "rstudio ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers; \
+    mkdir -p /etc/rstudio; \
+    printf "copilot-enabled=1\n" >> /etc/rstudio/rsession.conf; \
+    chmod -R 777 /home
+
+USER rstudio
+WORKDIR /home/rstudio
+
+CMD ["/bin/bash", "-lc", "echo 'R:' $(R --version | head -n1); echo 'Python:' $(python3.12 --version); echo 'Pip:' $(pip --version); echo 'Node:' $(node --version); echo 'npm:' $(npm --version); echo 'Quarto:' $(quarto --version 2>/dev/null || echo 'not installed'); echo 'Ready. Start RStudio Server with the base image entrypoint.' ]
