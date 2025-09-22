@@ -127,4 +127,4 @@ USER rstudio
 WORKDIR /home/rstudio
 
 # Quick diagnostics on container start (harmless)
-CMD ["/bin/bash", "-lc", "echo 'R:' $(R --version | head -n1); echo 'Python:' $(python3.12 --version); echo 'Pip:' $(pip --version); echo 'Node:' $(node --version 2>/dev/null || echo 'Node not installed'); echo 'npm:' $(npm --version 2>/dev/null || echo 'npm not installed'); echo 'Quarto:' $(quarto --version 2>/dev/null || echo 'Quarto not installed'); echo 'Container ready.' ]
+CMD ["/bin/bash", "-lc", "echo 'R:' $(R --version | head -n1); echo 'Python:' $(python3.12 --version); echo 'Pip:' $(pip --version); echo 'Node:' $(node --version 2>/dev/null || echo 'Node not installed'); echo 'npm:' $(npm --version 2>/dev/null || echo 'npm not installed'); echo 'Quarto:' $(quarto --version 2>/dev/null || echo 'Quarto not installed'); echo 'Container ready.'"]
