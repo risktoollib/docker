@@ -50,14 +50,14 @@ RUN set -eux; \
       --enable-optimizations \
       --with-lto && \
     make -j"$(nproc)" && make install && \
+    echo "${PY_PREFIX}/lib" > /etc/ld.so.conf.d/python${PYTHON_VERSION%.*}.conf && \
     ldconfig && \
     ln -sf "${PY_PREFIX}/bin/python3" /usr/local/bin/python3.12 && \
-    "${PY_PREFIX}/bin/python3" -m ensurepip && \
+    "${PY_PREFIX}/bin/python3" -m ensurepip --upgrade && \
     "${PY_PREFIX}/bin/python3" -m pip install --upgrade pip setuptools wheel && \
     cd /tmp && rm -rf "Python-${PYTHON_VERSION}" "Python-${PYTHON_VERSION}.tgz"
 
 # Ensure the runtime can find libpython3.12.so
-ENV LD_LIBRARY_PATH="${PY_PREFIX}/lib:${LD_LIBRARY_PATH}"
 
 # Create your global toolbox environment at /env and install uv + audit tool
 RUN "${PY_PREFIX}/bin/python3" -m venv /env \
@@ -97,8 +97,8 @@ RUN R CMD javareconf && \
 ENV CFLAGS="-I/usr/include/sasl" \
     LDFLAGS="-L/usr/lib" \
     USER=rstudio \
-    PASSWORD=rstudio \
-    ROOT=true
+    # (Set RStudio password at runtime via -e PASSWORD=...)
+    # ROOT=true can also be set at runtime if needed
 
 # User setup and permissions
 RUN echo "rstudio:rstudio" | chpasswd && \
