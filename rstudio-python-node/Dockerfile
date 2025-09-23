@@ -44,10 +44,9 @@ ENV LD_LIBRARY_PATH="${PY_PREFIX}/lib:${LD_LIBRARY_PATH}"
 RUN "${PY_PREFIX}/bin/python3" -m venv /opt/pyenv \
  && /opt/pyenv/bin/python -m pip install --upgrade pip setuptools wheel
 
-# Install Astral uv correctly (NOT via pip)
-# This installs to /root/.local/bin/uv; add to PATH.
-RUN curl -fsSL https://astral.sh/uv/install.sh | sh -s -- -y \
- && ln -s /root/.local/bin/uv /usr/local/bin/uv
+# Install Astral uv via pip (more reliable for containers)
+RUN /opt/pyenv/bin/python -m pip install uv \
+ && ln -s /opt/pyenv/bin/uv /usr/local/bin/uv
 
 ENV PATH="/opt/pyenv/bin:${PATH}"
 
