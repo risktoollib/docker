@@ -39,26 +39,24 @@ RUN set -eux; \
 
 # Make libpython discoverable at runtime
 ENV LD_LIBRARY_PATH="${PY_PREFIX}/lib:${LD_LIBRARY_PATH}"
-
-# Single global Python venv (keep it simple)
-RUN "${PY_PREFIX}/bin/python3" -m venv /opt/pyenv \
- && /opt/pyenv/bin/python -m pip install --upgrade pip setuptools wheel
-
-# Install Astral uv via pip (more reliable for containers)
-RUN /opt/pyenv/bin/python -m pip install uv \
- && ln -s /opt/pyenv/bin/uv /usr/local/bin/uv
-
 ENV PATH="/opt/pyenv/bin:${PATH}"
 
 # App workspace
 WORKDIR /home
-COPY requirements.txt r_packages.R ./
+COPY r_packages.R ./
 
 # Use uv for fast, deterministic Python installs (via venv)
 RUN uv pip install --upgrade pip setuptools wheel \
  && uv pip install -r requirements.txt \
  && /opt/pyenv/bin/python -m pip install --no-deps --no-build-isolation git+https://github.com/bbcho/risktools-dev.git \
  && /opt/pyenv/bin/python -m pip install pip-audit
+
+RUN python3.12 -m venv ~/env \
+&& source ~/env/bin/activate \
+&& pip install uv \
+&& uv pip install ipython requests pandas pandas-datareader numpy polars plotly plotnine pyarrow scipy yfinance streamlit manim setuptools playwright beautifulsoup4 lxml html5lib openpyxl \
+&& uv pip install git+https://github.com/bbcho/risktools-dev.git \
+&& python -m playwright install chromium
 
 # Node / Playwright
 RUN curl -fsSL https://deb.nodesource.com/setup_lts.x | bash - \
