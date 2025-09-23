@@ -1,136 +1,100 @@
+# Base image with R, tidyverse, RStudio Server, s6 /init
 FROM rocker/tidyverse:latest
 
-LABEL org.opencontainers.image.description="tidyverse + Python 3.12 (shared lib) + optional Node/Quarto"
-LABEL org.opencontainers.image.licenses="MIT"
-
-# -----------------------------
-# Build args (match your prior names if you had them)
-# -----------------------------
-ARG DEBIAN_FRONTEND=noninteractive
+ENV DEBIAN_FRONTEND=noninteractive
 ARG PYTHON_VERSION=3.12.11
-ARG PY_PREFIX=/opt/python/${PYTHON_VERSION}
+ENV PYTHON_VERSION=${PYTHON_VERSION}
+ENV PY_PREFIX=/opt/python/${PYTHON_VERSION}
 
-# -----------------------------
-# System deps (C toolchain + common CPython build libs)
-# -----------------------------
-RUN set -eux; \
-  apt-get update; \
-  apt-get install -y --no-install-recommends \
-    build-essential \
-    curl wget ca-certificates gnupg xz-utils \
-    libssl-dev zlib1g-dev \
-    libbz2-dev libreadline-dev libsqlite3-dev \
-    libffi-dev liblzma-dev tk-dev \
-    libgdbm-dev libnss3-dev uuid-dev \
-    libncurses5-dev libncursesw5-dev \
-    libxml2-dev libxslt1-dev \
-    libsasl2-dev \
-    sudo \
-    libcurl4-openssl-dev \
-    software-properties-common; \
-  rm -rf /var/lib/apt/lists/*
+# System deps for building Python + common R/Python builds
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential curl wget ca-certificates \
+    libssl-dev libffi-dev zlib1g-dev libbz2-dev libreadline-dev libsqlite3-dev \
+    libncurses5-dev libncursesw5-dev libgdbm-dev liblzma-dev libnss3-dev tk-dev uuid-dev xz-utils \
+    pkg-config libpango1.0-dev libcairo2-dev \
+    openjdk-17-jdk \
+    && rm -rf /var/lib/apt/lists/*
 
-# -----------------------------
-# (Optional) Node.js LTS — keep if you had Node in your image name/repo
-# Comment this block if you don’t need Node.
-# -----------------------------
-RUN set -eux; \
-  curl -fsSL https://deb.nodesource.com/setup_lts.x | bash -; \
-  apt-get update; \
-  apt-get install -y --no-install-recommends nodejs; \
-  rm -rf /var/lib/apt/lists/*; \
-  node --version; npm --version
+# Java
+ENV JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64
+ENV PATH=$JAVA_HOME/bin:$PATH
 
-# -----------------------------
-# Build & install CPython from source WITH a shared library
-# *** THIS is the critical fix: register ${PY_PREFIX}/lib with ldconfig BEFORE running python ***
-# -----------------------------
+# ---- Build Python 3.12 (shared) ----
+WORKDIR /tmp
 RUN set -eux; \
-  mkdir -p /tmp/src && cd /tmp/src; \
-  curl -fsSLO "https://www.python.org/ftp/python/${PYTHON_VERSION}/Python-${PYTHON_VERSION}.tgz"; \
-  tar -xzf "Python-${PYTHON_VERSION}.tgz"; \
-  cd "Python-${PYTHON_VERSION}"; \
+  curl -fsSLO "https://www.python.org/ftp/python/${PYTHON_VERSION}/Python-${PYTHON_VERSION}.tgz" && \
+  tar -xzf "Python-${PYTHON_VERSION}.tgz" && \
+  cd "Python-${PYTHON_VERSION}" && \
   ./configure \
     --prefix="${PY_PREFIX}" \
     --enable-shared \
     --enable-optimizations \
-    --with-lto; \
-  make -j"$(nproc)"; \
-  make install; \
-  # Register the shared lib path (so libpython3.12.so.1.0 is found by the loader)
-  echo "${PY_PREFIX}/lib" > "/etc/ld.so.conf.d/python${PYTHON_VERSION%.*}.conf"; \
-  ldconfig; \
-  # Provide a stable shim in PATH
-  ln -sf "${PY_PREFIX}/bin/python3" /usr/local/bin/python3.12; \
-  # Safe to invoke python now
-  "${PY_PREFIX}/bin/python3" -m ensurepip --upgrade; \
-  "${PY_PREFIX}/bin/python3" -m pip install --upgrade pip setuptools wheel; \
-  cd /; \
-  rm -rf /tmp/src
+    --with-lto && \
+  make -j"$(nproc)" && make install && \
+  echo "${PY_PREFIX}/lib" > /etc/ld.so.conf.d/python${PYTHON_VERSION}.conf && ldconfig && \
+  ln -sf "${PY_PREFIX}/bin/python3" /usr/local/bin/python3.12 && \
+  "${PY_PREFIX}/bin/python3" -m ensurepip && \
+  "${PY_PREFIX}/bin/python3" -m pip install --upgrade pip setuptools wheel && \
+  cd /tmp && rm -rf "Python-${PYTHON_VERSION}" "Python-${PYTHON_VERSION}.tgz"
 
-# -----------------------------
-# (Optional) Quarto + TinyTeX — keep if you had it previously
-# -----------------------------
-RUN set -eux; \
-  curl -fsSL -o /tmp/quarto.deb https://quarto.org/download/latest/quarto-linux-amd64.deb || true; \
-  if [ -s /tmp/quarto.deb ]; then \
-    apt-get update && apt-get install -y --no-install-recommends /tmp/quarto.deb && rm -f /tmp/quarto.deb && rm -rf /var/lib/apt/lists/*; \
-    quarto --version || true; \
-    quarto install tinytex || true; \
-  fi
+# Make libpython discoverable at runtime
+ENV LD_LIBRARY_PATH="${PY_PREFIX}/lib:${LD_LIBRARY_PATH}"
 
-# -----------------------------
-# Python packages you likely expect (adjust to taste)
-# -----------------------------
-RUN set -eux; \
-  "${PY_PREFIX}/bin/pip" install --no-cache-dir \
-    numpy pandas scipy matplotlib \
-    jupyter jupyterlab
+# Single global Python venv (keep it simple)
+RUN "${PY_PREFIX}/bin/python3" -m venv /opt/pyenv \
+ && /opt/pyenv/bin/python -m pip install --upgrade pip setuptools wheel
 
-# -----------------------------
-# Environment (fixes your previous ENV parsing bug)
-# - No trailing "\" on the last line
-# - No secrets in ENV
-# - LD_LIBRARY_PATH not required because we used ldconfig, but harmless if you really need it.
-# -----------------------------
-ENV PATH="${PY_PREFIX}/bin:${PATH}" \
-    PYTHONUNBUFFERED=1 \
-    PIP_NO_CACHE_DIR=1 \
-    CFLAGS="-I/usr/include/sasl" \
-    LDFLAGS="-L/usr/lib" \
-    USER=rstudio
+# Install Astral uv correctly (NOT via pip)
+# This installs to /root/.local/bin/uv; add to PATH.
+RUN curl -fsSL https://astral.sh/uv/install.sh | sh -s -- -y \
+ && ln -s /root/.local/bin/uv /usr/local/bin/uv
 
-# If you insist on LD_LIBRARY_PATH (not needed), do it safely:
-# ENV LD_LIBRARY_PATH="${PY_PREFIX}/lib:${LD_LIBRARY_PATH:-}"
+ENV PATH="/opt/pyenv/bin:${PATH}"
 
-# -----------------------------
-# RStudio-related bits (safe whether or not rstudio-server is present)
-# - Do NOT bake credentials into the image. Pass at runtime:
-#     -e PASSWORD=...   (RStudio password)
-#     -e ROOT=true      (optional)
-# -----------------------------
-RUN set -eux; \
-  # Ensure rstudio user exists (it should in many rocker images, but make this idempotent)
-  if ! id rstudio >/dev/null 2>&1; then useradd -m -s /bin/bash rstudio; fi; \
-  echo "rstudio:rstudio" | chpasswd || true; \
-  mkdir -p /home/rstudio; chown -R rstudio:rstudio /home/rstudio; \
-  echo "rstudio ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers; \
-  mkdir -p /etc/rstudio; \
-  printf "copilot-enabled=1\n" >> /etc/rstudio/rsession.conf || true; \
-  chmod -R 777 /home
+# App workspace
+WORKDIR /home
+COPY requirements.txt r_packages.R ./
 
-EXPOSE 8787
+# Use uv for fast, deterministic Python installs
+RUN uv pip install --system --upgrade pip setuptools wheel \
+ && uv pip install --system -r requirements.txt \
+ && /opt/pyenv/bin/python -m pip install pip-audit
 
-# Default user & workir
-USER rstudio
+# Node / Playwright
+RUN curl -fsSL https://deb.nodesource.com/setup_lts.x | bash - \
+ && apt-get update && apt-get install -y --no-install-recommends nodejs \
+ && npm install -g playwright axios cheerio \
+ && npx playwright install-deps \
+ && npx playwright install \
+ && rm -rf /var/lib/apt/lists/*
+
+# R: Java config + packages
+RUN R CMD javareconf
+
+# Make sure devtools exists before install_github(); avoid failing on missing "snowflakes"
+RUN R -q -e 'if (!requireNamespace("devtools", quietly=TRUE)) install.packages("devtools", repos="https://cloud.r-project.org")' \
+ && R -q -e 'source("r_packages.R")' \
+ && R -q -e 'devtools::install_github("risktoollib/RTL", upgrade="never")' \
+ && R -q -e 'pkgs <- c("mongolite"); install.packages(pkgs[!pkgs %in% rownames(installed.packages())], repos="https://cloud.r-project.org")' \
+ || true
+# ^ `|| true` keeps the build going if a GitHub or CRAN hiccup occurs. Remove if you prefer hard-fail.
+
+# Quarto/TinyTeX: only run if quarto is present; otherwise fall back to R tinytex
+RUN if command -v quarto >/dev/null 2>&1; then \
+      quarto install tinytex; \
+    else \
+      R -q -e 'if (!requireNamespace("tinytex", quietly=TRUE)) install.packages("tinytex", repos="https://cloud.r-project.org"); tinytex::install_tinytex()'; \
+    fi
+
+# Rocker / RStudio defaults
+ENV USER=rstudio PASSWORD=rstudio ROOT=true
+
+# Permissions + quality-of-life
+RUN echo "rstudio:rstudio" | chpasswd \
+ && chown -R rstudio:rstudio /home/rstudio || true \
+ && echo "rstudio ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers \
+ && echo "copilot-enabled=1" >> /etc/rstudio/rsession.conf
+
 WORKDIR /home/rstudio
-
-CMD ["/bin/bash", "-lc", "\
-  echo \"R: $(R --version | head -n1)\"; \
-  echo \"Python: $(python3.12 --version)\"; \
-  echo \"Pip: $(pip --version)\"; \
-  echo \"Node: $(node --version 2>/dev/null || echo 'Node not installed')\"; \
-  echo \"npm: $(npm --version 2>/dev/null || echo 'npm not installed')\"; \
-  echo \"Quarto: $(quarto --version 2>/dev/null || echo 'Quarto not installed')\"; \
-  echo 'Container ready.'; \
-  exec /init" ]
+EXPOSE 8787
+CMD ["/init"]
