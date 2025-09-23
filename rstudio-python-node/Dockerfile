@@ -42,15 +42,14 @@ ENV LD_LIBRARY_PATH="${PY_PREFIX}/lib:${LD_LIBRARY_PATH}"
 ENV PATH="/opt/pyenv/bin:${PATH}"
 
 # App workspace
-WORKDIR /home
+WORKDIR /home/rstudio
 COPY r_packages.R ./
-
-RUN python3.12 -m venv env \
-&& source ./env/bin/activate \
-&& pip install uv \
-&& uv pip install ipython requests pandas pandas-datareader numpy polars plotly plotnine pyarrow scipy yfinance streamlit manim setuptools playwright beautifulsoup4 lxml html5lib openpyxl \
-&& uv pip install git+https://github.com/bbcho/risktools-dev.git \
-&& python -m playwright install chromium
+RUN /opt/python/3.12.11/bin/python3 -m venv env \
+ && source ./env/bin/activate \
+ && pip install uv \
+ && uv pip install ipython requests pandas pandas-datareader numpy polars plotly plotnine pyarrow scipy yfinance streamlit manim setuptools playwright beautifulsoup4 lxml html5lib openpyxl \
+ && (uv pip install --no-deps git+https://github.com/bbcho/risktools-dev.git || echo "Skipping risktools due to macOS dependencies") \
+ && python -m playwright install chromium
 
 # Node / Playwright
 RUN curl -fsSL https://deb.nodesource.com/setup_lts.x | bash - \
