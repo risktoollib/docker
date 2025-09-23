@@ -45,14 +45,8 @@ ENV PATH="/opt/pyenv/bin:${PATH}"
 WORKDIR /home
 COPY r_packages.R ./
 
-# Use uv for fast, deterministic Python installs (via venv)
-RUN uv pip install --upgrade pip setuptools wheel \
- && uv pip install -r requirements.txt \
- && /opt/pyenv/bin/python -m pip install --no-deps --no-build-isolation git+https://github.com/bbcho/risktools-dev.git \
- && /opt/pyenv/bin/python -m pip install pip-audit
-
-RUN python3.12 -m venv ~/env \
-&& source ~/env/bin/activate \
+RUN python3.12 -m venv env \
+&& source ./env/bin/activate \
 && pip install uv \
 && uv pip install ipython requests pandas pandas-datareader numpy polars plotly plotnine pyarrow scipy yfinance streamlit manim setuptools playwright beautifulsoup4 lxml html5lib openpyxl \
 && uv pip install git+https://github.com/bbcho/risktools-dev.git \
