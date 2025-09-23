@@ -54,10 +54,10 @@ ENV PATH="/opt/pyenv/bin:${PATH}"
 WORKDIR /home
 COPY requirements.txt r_packages.R ./
 
-# Use uv for fast, deterministic Python installs
-RUN uv pip install --system --upgrade pip setuptools wheel \
- && uv pip install --system -r requirements.txt \
- && uv pip install --system git+https://github.com/bbcho/risktools-dev.git \
+# Use uv for fast, deterministic Python installs (via venv)
+RUN uv pip install --upgrade pip setuptools wheel \
+ && uv pip install -r requirements.txt \
+ && uv pip install git+https://github.com/bbcho/risktools-dev.git \
  && /opt/pyenv/bin/python -m pip install pip-audit
 
 # Node / Playwright
