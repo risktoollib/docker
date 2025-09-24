@@ -37,37 +37,39 @@ RUN set -eux; \
   "${PY_PREFIX}/bin/python3" -m pip install --upgrade pip setuptools wheel && \
   cd /tmp && rm -rf "Python-${PYTHON_VERSION}" "Python-${PYTHON_VERSION}.tgz"
 
-# Make libpython discoverable at runtime
-ENV LD_LIBRARY_PATH="${PY_PREFIX}/lib:${LD_LIBRARY_PATH}"
+# Make libpython discoverable at runtime - fix undefined variable warning
+ENV LD_LIBRARY_PATH="${PY_PREFIX}/lib${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
 ENV PATH="/opt/pyenv/bin:${PATH}"
 
 # App workspace
 WORKDIR /home/rstudio
 COPY r_packages.R ./
-RUN /opt/python/3.12.11/bin/python3 -m venv env \
- && source ./env/bin/activate \
- && pip install uv \
- && uv pip install ipython requests pandas pandas-datareader numpy polars plotly plotnine pyarrow scipy yfinance streamlit manim setuptools playwright beautifulsoup4 lxml html5lib openpyxl \
- && (uv pip install --no-deps git+https://github.com/bbcho/risktools-dev.git || echo "Skipping risktools due to macOS dependencies") \
- && python -m playwright install chromium
+
+# Fix: Use . instead of source, and use explicit paths for the virtual environment
+RUN /opt/python/3.12.11/bin/python3 -m venv env && \
+    . ./env/bin/activate && \
+    pip install uv && \
+    uv pip install ipython requests pandas pandas-datareader numpy polars plotly plotnine pyarrow scipy yfinance streamlit manim setuptools playwright beautifulsoup4 lxml html5lib openpyxl && \
+    (uv pip install --no-deps git+https://github.com/bbcho/risktools-dev.git || echo "Skipping risktools due to macOS dependencies") && \
+    python -m playwright install chromium
 
 # Node / Playwright
-RUN curl -fsSL https://deb.nodesource.com/setup_lts.x | bash - \
- && apt-get update && apt-get install -y --no-install-recommends nodejs \
- && npm install -g playwright axios cheerio \
- && npx playwright install-deps \
- && npx playwright install \
- && rm -rf /var/lib/apt/lists/*
+RUN curl -fsSL https://deb.nodesource.com/setup_lts.x | bash - && \
+    apt-get update && apt-get install -y --no-install-recommends nodejs && \
+    npm install -g playwright axios cheerio && \
+    npx playwright install-deps && \
+    npx playwright install && \
+    rm -rf /var/lib/apt/lists/*
 
 # R: Java config + packages
 RUN R CMD javareconf
 
 # Make sure devtools exists before install_github(); avoid failing on missing "snowflakes"
-RUN R -q -e 'if (!requireNamespace("devtools", quietly=TRUE)) install.packages("devtools", repos="https://cloud.r-project.org")' \
- && R -q -e 'source("r_packages.R")' \
- && R -q -e 'devtools::install_github("risktoollib/RTL", upgrade="never")' \
- && R -q -e 'pkgs <- c("mongolite"); install.packages(pkgs[!pkgs %in% rownames(installed.packages())], repos="https://cloud.r-project.org")' \
- || true
+RUN R -q -e 'if (!requireNamespace("devtools", quietly=TRUE)) install.packages("devtools", repos="https://cloud.r-project.org")' && \
+    R -q -e 'source("r_packages.R")' && \
+    R -q -e 'devtools::install_github("risktoollib/RTL", upgrade="never")' && \
+    R -q -e 'pkgs <- c("mongolite"); install.packages(pkgs[!pkgs %in% rownames(installed.packages())], repos="https://cloud.r-project.org")' \
+    || true
 # ^ `|| true` keeps the build going if a GitHub or CRAN hiccup occurs. Remove if you prefer hard-fail.
 
 # Quarto/TinyTeX: only run if quarto is present; otherwise fall back to R tinytex
@@ -77,14 +79,16 @@ RUN if command -v quarto >/dev/null 2>&1; then \
       R -q -e 'if (!requireNamespace("tinytex", quietly=TRUE)) install.packages("tinytex", repos="https://cloud.r-project.org"); tinytex::install_tinytex()'; \
     fi
 
-# Rocker / RStudio defaults
-ENV USER=rstudio PASSWORD=rstudio ROOT=true
+# Rocker / RStudio defaults - use more secure default password
+ENV USER=rstudio ROOT=true
+ARG RSTUDIO_PASSWORD=rstudio
+ENV PASSWORD=${RSTUDIO_PASSWORD}
 
 # Permissions + quality-of-life
-RUN echo "rstudio:rstudio" | chpasswd \
- && chown -R rstudio:rstudio /home/rstudio || true \
- && echo "rstudio ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers \
- && echo "copilot-enabled=1" >> /etc/rstudio/rsession.conf
+RUN echo "rstudio:${PASSWORD}" | chpasswd && \
+    chown -R rstudio:rstudio /home/rstudio || true && \
+    echo "rstudio ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers && \
+    echo "copilot-enabled=1" >> /etc/rstudio/rsession.conf
 
 WORKDIR /home/rstudio
 EXPOSE 8787
