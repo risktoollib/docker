@@ -31,7 +31,7 @@ With `uv` MacOS or Linux
 python3.12 -m venv ~/env
 source ~/env/bin/activate
 pip install uv
-uv pip install ipython requests pandas pandas-datareader numpy polars plotly plotnine pyarrow scipy yfinance streamlit manim setuptools playwright beautifulsoup4 lxml html5lib openpyxl geopandas nbformat
+uv pip install ipython requests pandas pandas-datareader numpy polars plotly plotnine pyarrow scipy yfinance streamlit manim setuptools playwright beautifulsoup4 lxml html5lib openpyxl geopandas nbformat folium
 uv pip install git+https://github.com/bbcho/risktools-dev.git
 python -m playwright install chromium
 uv pip freeze --exclude-editable > ~/docker/rstudio-python-node/requirements.txt
