@@ -15,9 +15,9 @@ I recommend using the `rstudio-python-node` container as it has the most feature
 -- this is documentation for the package maintainer -- 
 
 ``` bash
-python3.11 -m venv ~/env
+python3.12 -m venv ~/env
 source ~/env/bin/activate
-pip3.12 install ipython requests pandas pandas-datareader numpy polars plotly plotnine pyarrow scipy yfinance streamlit manim setuptools playwright beautifulsoup4 lxml html5lib openpyxl
+pip3.12 install ipython requests pandas pandas-datareader numpy polars plotly plotnine pyarrow scipy yfinance streamlit manim setuptools playwright beautifulsoup4 lxml html5lib openpyxl QuantLib
 pip3.12 install git+https://github.com/bbcho/risktools-dev.git
 python -m playwright install chromium
 pip3.12 freeze | grep -v "pyobjc" > ~/docker/rstudio-python-node/requirements.txt
@@ -31,11 +31,9 @@ With `uv` MacOS or Linux
 python3.12 -m venv ~/env
 source ~/env/bin/activate
 pip install uv
-uv pip install ipython requests pandas pandas-datareader numpy polars plotly plotnine pyarrow scipy yfinance streamlit manim setuptools playwright beautifulsoup4 lxml html5lib openpyxl geopandas nbformat folium
+uv pip install ipython requests pandas pandas-datareader numpy polars plotly plotnine pyarrow scipy yfinance streamlit manim setuptools playwright beautifulsoup4 lxml html5lib openpyxl geopandas nbformat folium QuantLib
 uv pip install git+https://github.com/bbcho/risktools-dev.git
 python -m playwright install chromium
-uv pip freeze --exclude-editable > ~/docker/rstudio-python-node/requirements.txt
-uv pip freeze --exclude-editable > ~/docker/rstudio-python-node/requirements.txt
 uv pip freeze --exclude-editable > ~/docker/rstudio-python-node/requirements.txt
 ```
 

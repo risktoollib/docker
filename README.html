@@ -373,9 +373,9 @@ environment.</li>
 <div id="building-python-envs" class="section level4">
 <h4>Building Python Envs</h4>
 <p>– this is documentation for the package maintainer –</p>
-<pre class="bash"><code>python3.11 -m venv ~/env
+<pre class="bash"><code>python3.12 -m venv ~/env
 source ~/env/bin/activate
-pip3.12 install ipython requests pandas pandas-datareader numpy polars plotly plotnine pyarrow scipy yfinance streamlit manim setuptools playwright beautifulsoup4 lxml html5lib openpyxl
+pip3.12 install ipython requests pandas pandas-datareader numpy polars plotly plotnine pyarrow scipy yfinance streamlit manim setuptools playwright beautifulsoup4 lxml html5lib openpyxl QuantLib
 pip3.12 install git+https://github.com/bbcho/risktools-dev.git
 python -m playwright install chromium
 pip3.12 freeze | grep -v &quot;pyobjc&quot; &gt; ~/docker/rstudio-python-node/requirements.txt
@@ -385,11 +385,9 @@ pip3.12 freeze | grep -v &quot;pyobjc&quot; &gt; ~/data/requirements.txt</code><
 <pre class="bash"><code>python3.12 -m venv ~/env
 source ~/env/bin/activate
 pip install uv
-uv pip install ipython requests pandas pandas-datareader numpy polars plotly plotnine pyarrow scipy yfinance streamlit manim setuptools playwright beautifulsoup4 lxml html5lib openpyxl
+uv pip install ipython requests pandas pandas-datareader numpy polars plotly plotnine pyarrow scipy yfinance streamlit manim setuptools playwright beautifulsoup4 lxml html5lib openpyxl geopandas nbformat folium QuantLib
 uv pip install git+https://github.com/bbcho/risktools-dev.git
 python -m playwright install chromium
-uv pip freeze --exclude-editable &gt; ~/docker/rstudio-python-node/requirements.txt
-uv pip freeze --exclude-editable &gt; ~/docker/rstudio-python-node/requirements.txt
 uv pip freeze --exclude-editable &gt; ~/docker/rstudio-python-node/requirements.txt</code></pre>
 <p>With <code>uv</code> on Windows - use Power Shell 7.</p>
 <p><code># Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass # (one-time) If activation is blocked in this PowerShell window: py -3.12 -m venv env .\env\Scripts\Activate.ps1 python -m pip install --upgrade pip python -m pip install -U uv uv pip install ipython requests pandas pandas-datareader numpy polars plotly plotnine pyarrow scipy yfinance streamlit manim setuptools playwright beautifulsoup4 lxml html5lib openpyxl uv pip install git+https://github.com/bbcho/risktools-dev.git python -m playwright install chromium</code></p>
