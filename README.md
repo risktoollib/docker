@@ -28,7 +28,8 @@ pip3.12 freeze | grep -v "pyobjc" > ~/data/requirements.txt
 With `uv` MacOS or Linux
 
 ``` bash
-python3.12 -m venv ~/env
+# python3.12 -m venv ~/env
+uv venv ~/env --python 3.12
 source ~/env/bin/activate
 pip install uv
 uv pip install ipython requests pandas pandas-datareader numpy polars plotly plotnine pyarrow scipy yfinance streamlit manim setuptools playwright beautifulsoup4 lxml html5lib openpyxl geopandas nbformat folium QuantLib

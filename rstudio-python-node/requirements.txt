@@ -68,7 +68,6 @@ patsy==1.0.2
 peewee==3.19.0
 pexpect==4.9.0
 pillow==12.1.0
-pip==25.2
 platformdirs==4.5.1
 playwright==1.57.0
 plotly==6.5.1
@@ -126,7 +125,6 @@ traitlets==5.14.3
 typing-extensions==4.15.0
 tzdata==2025.3
 urllib3==2.6.3
-uv==0.9.24
 watchdog==6.0.0
 wcwidth==0.2.14
 webencodings==0.5.1
