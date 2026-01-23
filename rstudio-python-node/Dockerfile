@@ -1,3 +1,4 @@
+# syntax=docker/dockerfile:1
 # Base image with R, tidyverse, RStudio Server, s6 /init
 FROM rocker/tidyverse:latest
 
@@ -35,7 +36,8 @@ RUN set -eux; \
   ln -sf "${PY_PREFIX}/bin/python3" /usr/local/bin/python3.12 && \
   "${PY_PREFIX}/bin/python3" -m ensurepip && \
   "${PY_PREFIX}/bin/python3" -m pip install --upgrade pip setuptools wheel && \
-  cd /tmp && rm -rf "Python-${PYTHON_VERSION}" "Python-${PYTHON_VERSION}.tgz"
+  cd /tmp && rm -rf "Python-${PYTHON_VERSION}" "Python-${PYTHON_VERSION}.tgz" && \
+  apt-get purge -y build-essential && apt-get autoremove -y && apt-get clean
 
 # Make libpython discoverable at runtime - fix undefined variable warning
 ENV LD_LIBRARY_PATH="${PY_PREFIX}/lib${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
@@ -46,7 +48,8 @@ WORKDIR /home/rstudio
 COPY r_packages.R ./
 
 # Fix: Use . instead of source, and use explicit paths for the virtual environment
-RUN /opt/python/3.12.11/bin/python3 -m venv env && \
+RUN --mount=type=cache,target=/root/.cache/uv \
+    /opt/python/3.12.11/bin/python3 -m venv env && \
     . ./env/bin/activate && \
     pip install uv && \
     uv pip install ipython requests pandas pandas-datareader numpy polars plotly plotnine pyarrow scipy yfinance streamlit manim setuptools playwright beautifulsoup4 lxml html5lib openpyxl && \
@@ -54,7 +57,8 @@ RUN /opt/python/3.12.11/bin/python3 -m venv env && \
     python -m playwright install chromium
 
 # Node / Playwright
-RUN curl -fsSL https://deb.nodesource.com/setup_lts.x | bash - && \
+ENV NODE_VERSION=20
+RUN curl -fsSL https://deb.nodesource.com/setup_${NODE_VERSION}.x | bash - && \
     apt-get update && apt-get install -y --no-install-recommends nodejs && \
     npm install -g playwright axios cheerio && \
     npx playwright install-deps && \
@@ -64,11 +68,16 @@ RUN curl -fsSL https://deb.nodesource.com/setup_lts.x | bash - && \
 # R: Java config + packages
 RUN R CMD javareconf
 
+# Configure reticulate to use our venv BEFORE installing packages
+ENV RETICULATE_PYTHON=/home/rstudio/env/bin/python
+ENV RETICULATE_PYTHON_ENV=/home/rstudio/env
+
 # Make sure devtools exists before install_github(); avoid failing on missing "snowflakes"
-RUN R -q -e 'if (!requireNamespace("devtools", quietly=TRUE)) install.packages("devtools", repos="https://cloud.r-project.org")' && \
-    R -q -e 'source("r_packages.R")' && \
+RUN R -q -e 'options(Ncpus=parallel::detectCores()); if (!requireNamespace("devtools", quietly=TRUE)) install.packages("devtools", repos="https://cloud.r-project.org")' && \
+    R -q -e 'options(Ncpus=parallel::detectCores()); source("r_packages.R")' && \
     R -q -e 'devtools::install_github("risktoollib/RTL", upgrade="never")' && \
-    R -q -e 'pkgs <- c("mongolite"); install.packages(pkgs[!pkgs %in% rownames(installed.packages())], repos="https://cloud.r-project.org")' \
+    R -q -e 'options(Ncpus=parallel::detectCores()); pkgs <- c("mongolite"); install.packages(pkgs[!pkgs %in% rownames(installed.packages())], repos="https://cloud.r-project.org")' && \
+    rm -f /usr/local/lib/R/site-library/00LOCK* \
     || true
 # ^ `|| true` keeps the build going if a GitHub or CRAN hiccup occurs. Remove if you prefer hard-fail.
 
@@ -88,7 +97,8 @@ ENV PASSWORD=${RSTUDIO_PASSWORD}
 RUN echo "rstudio:${PASSWORD}" | chpasswd && \
     chown -R rstudio:rstudio /home/rstudio || true && \
     echo "rstudio ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers && \
-    echo "copilot-enabled=1" >> /etc/rstudio/rsession.conf
+    echo "copilot-enabled=1" >> /etc/rstudio/rsession.conf && \
+    rm -f /usr/local/lib/R/site-library/00LOCK* /home/rstudio/R/*/00LOCK* || true
 
 WORKDIR /home/rstudio
 EXPOSE 8787
