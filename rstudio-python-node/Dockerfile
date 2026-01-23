@@ -3,9 +3,6 @@
 FROM rocker/tidyverse:latest
 
 ENV DEBIAN_FRONTEND=noninteractive
-ARG PYTHON_VERSION=3.12.11
-ENV PYTHON_VERSION=${PYTHON_VERSION}
-ENV PY_PREFIX=/opt/python/${PYTHON_VERSION}
 
 # System deps for building Python + common R/Python builds
 RUN apt-get update && apt-get install -y --no-install-recommends \
@@ -20,9 +17,16 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 ENV JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64
 ENV PATH=$JAVA_HOME/bin:$PATH
 
-# ---- Build Python 3.12 (shared) ----
+# ---- Build Python 3.12 (shared) - auto-detects latest 3.12.x patch ----
 WORKDIR /tmp
 RUN set -eux; \
+  PYTHON_VERSION=$(curl -fsSL https://www.python.org/ftp/python/ | \
+    grep -oP '3\.12\.[0-9]+/' | \
+    sed 's/\///' | \
+    sort -V | \
+    tail -1) && \
+  PY_PREFIX=/opt/python/${PYTHON_VERSION} && \
+  echo "Building Python ${PYTHON_VERSION}" && \
   curl -fsSLO "https://www.python.org/ftp/python/${PYTHON_VERSION}/Python-${PYTHON_VERSION}.tgz" && \
   tar -xzf "Python-${PYTHON_VERSION}.tgz" && \
   cd "Python-${PYTHON_VERSION}" && \
@@ -33,23 +37,29 @@ RUN set -eux; \
     --with-lto && \
   make -j"$(nproc)" && make install && \
   echo "${PY_PREFIX}/lib" > /etc/ld.so.conf.d/python${PYTHON_VERSION}.conf && ldconfig && \
-  ln -sf "${PY_PREFIX}/bin/python3" /usr/local/bin/python3.12 && \
+  ln -sf "${PY_PREFIX}/bin/python3" /usr/local/bin/python3 && \
+  ln -sf "${PY_PREFIX}/bin/pip3" /usr/local/bin/pip3 && \
   "${PY_PREFIX}/bin/python3" -m ensurepip && \
   "${PY_PREFIX}/bin/python3" -m pip install --upgrade pip setuptools wheel && \
-  cd /tmp && rm -rf "Python-${PYTHON_VERSION}" "Python-${PYTHON_VERSION}.tgz" && \
-  apt-get purge -y build-essential && apt-get autoremove -y && apt-get clean
+  echo "PYTHON_VERSION=${PYTHON_VERSION}" > /etc/python_version && \
+  echo "PY_PREFIX=${PY_PREFIX}" >> /etc/python_version && \
+  cd /tmp && rm -rf "Python-${PYTHON_VERSION}" "Python-${PYTHON_VERSION}.tgz"
 
-# Make libpython discoverable at runtime - fix undefined variable warning
-ENV LD_LIBRARY_PATH="${PY_PREFIX}/lib${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
-ENV PATH="/opt/pyenv/bin:${PATH}"
+# Make libpython discoverable at runtime
+RUN . /etc/python_version && \
+    echo "LD_LIBRARY_PATH=${PY_PREFIX}/lib:\${LD_LIBRARY_PATH}" >> /etc/environment && \
+    echo "PATH=${PY_PREFIX}/bin:\${PATH}" >> /etc/environment
+
+ENV PATH="/usr/local/bin:${PATH}"
 
 # App workspace
 WORKDIR /home/rstudio
 COPY r_packages.R ./
 
-# Fix: Use . instead of source, and use explicit paths for the virtual environment
+# Create Python virtual environment and install packages with uv
 RUN --mount=type=cache,target=/root/.cache/uv \
-    /opt/python/3.12.11/bin/python3 -m venv env && \
+    . /etc/python_version && \
+    ${PY_PREFIX}/bin/python3 -m venv env && \
     . ./env/bin/activate && \
     pip install uv && \
     uv pip install ipython requests pandas pandas-datareader numpy polars plotly plotnine pyarrow scipy yfinance streamlit manim setuptools playwright beautifulsoup4 lxml html5lib openpyxl && \
@@ -59,7 +69,7 @@ RUN --mount=type=cache,target=/root/.cache/uv \
 # Node / Playwright
 ENV NODE_VERSION=20
 RUN curl -fsSL https://deb.nodesource.com/setup_${NODE_VERSION}.x | bash - && \
-    apt-get update && apt-get install -y --no-install-recommends nodejs && \
+    apt-get install -y --no-install-recommends nodejs && \
     npm install -g playwright axios cheerio && \
     npx playwright install-deps && \
     npx playwright install && \
@@ -88,10 +98,15 @@ RUN if command -v quarto >/dev/null 2>&1; then \
       R -q -e 'if (!requireNamespace("tinytex", quietly=TRUE)) install.packages("tinytex", repos="https://cloud.r-project.org"); tinytex::install_tinytex()'; \
     fi
 
-# Rocker / RStudio defaults - use more secure default password
+# Final cleanup: purge build dependencies after all compilations are complete
+RUN apt-get purge -y build-essential && \
+    apt-get autoremove -y && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
+
+# Rocker / RStudio defaults - hardcoded password
 ENV USER=rstudio ROOT=true
-ARG RSTUDIO_PASSWORD=rstudio
-ENV PASSWORD=${RSTUDIO_PASSWORD}
+ENV PASSWORD=rstudio
 
 # Permissions + quality-of-life
 RUN echo "rstudio:${PASSWORD}" | chpasswd && \
